@@ -1,9 +1,0 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-    <path
-        android:pathData="M12,2c5.523,0 10,4.477 10,10s-4.477,10 -10,10s-10,-4.477 -10,-10s4.477,-10 10,-10zM6,11a1,1 0,0 0,-1 1a7,7 0,0 0,7 7a1,1 0,0 0,0 -2a5,5 0,0 1,-5 -5a1,1 0,0 0,-1 -1z"
-        android:fillColor="@color/tabler_icon" />
-</vector>
