@@ -1,0 +1,209 @@
+package org.cloudburstmc.protocol.bedrock.data;
+
+public enum ExpressionOp {
+    LEFT_BRACE,
+    RIGHT_BRACE,
+    LEFT_BRACKET,
+    RIGHT_BRACKET,
+    LEFT_PARENTHESIS,
+    RIGHT_PARENTHESIS,
+    NEGATE,
+    LOGICAL_NOT,
+    ABS,
+    ADD,
+    ACOS,
+    ASIN,
+    ATAN,
+    ATAN2,
+    CEIL,
+    CLAMP,
+    COPY_SIGN,
+    COS,
+    DIE_ROLL,
+    DIE_ROLL_INT,
+    DIV,
+    EXP,
+    FLOOR,
+    HERMITE_BLEND,
+    LERP,
+    LERP_ROTATE,
+    LN,
+    MAX,
+    MIN,
+    MIN_ANGLE,
+    MOD,
+    MUL,
+    POW,
+    RANDOM,
+    RANDOM_INT,
+    ROUND,
+    SIN,
+    SIGN,
+    SQRT,
+    TRUNC,
+    QUERY_FUNCTION,
+    ARRAY_VARIABLE,
+    CONTEXT_VARIABLE,
+    ENTITY_VARIABLE,
+    TEMP_VARIABLE,
+    MEMBER_ACCESSOR,
+    HASHED_STRING_HASH,
+    GEOMETRY_VARIABLE,
+    MATERIAL_VARIABLE,
+    TEXTURE_VARIABLE,
+    LESS_THAN,
+    LESS_EQUAL,
+    GREATER_EQUAL,
+    GREATER_THAN,
+    LOGICAL_EQUAL,
+    LOGICAL_NOT_EQUAL,
+    LOGICAL_OR,
+    LOGICAL_AND,
+    NULL_COALESCING,
+    CONDITIONAL,
+    CONDITIONAL_ELSE,
+    FLOAT,
+    PI,
+    ARRAY,
+    GEOMETRY,
+    MATERIAL,
+    TEXTURE,
+    LOOP,
+    FOR_EACH,
+    BREAK,
+    CONTINUE,
+    ASSIGNMENT,
+    POINTER,
+    SEMICOLON,
+    RETURN,
+    COMMA,
+    THIS,
+    /**
+     * @since v859
+     */
+    NON_EVALUATED_ARRAY,
+    /**
+     * @since v859
+     */
+    INVERSE_LERP,
+    /**
+     * @since v859
+     */
+    EASE_IN_QUAD,
+    /**
+     * @since v859
+     */
+    EASE_OUT_QUAD,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_QUAD,
+    /**
+     * @since v859
+     */
+    EASE_IN_CUBIC,
+    /**
+     * @since v859
+     */
+    EASE_OUT_CUBIC,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_CUBIC,
+    /**
+     * @since v859
+     */
+    EASE_IN_QUART,
+    /**
+     * @since v859
+     */
+    EASE_OUT_QUART,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_QUART,
+    /**
+     * @since v859
+     */
+    EASE_IN_QUINT,
+    /**
+     * @since v859
+     */
+    EASE_OUT_QUINT,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_QUINT,
+    /**
+     * @since v859
+     */
+    EASE_IN_SINE,
+    /**
+     * @since v859
+     */
+    EASE_OUT_SINE,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_SINE,
+    /**
+     * @since v859
+     */
+    EASE_IN_EXPO,
+    /**
+     * @since v859
+     */
+    EASE_OUT_EXPO,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_EXPO,
+    /**
+     * @since v859
+     */
+    EASE_IN_CIRC,
+    /**
+     * @since v859
+     */
+    EASE_OUT_CIRC,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_CIRC,
+    /**
+     * @since v859
+     */
+    EASE_IN_BOUNCE,
+    /**
+     * @since v859
+     */
+    EASE_OUT_BOUNCE,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_BOUNCE,
+    /**
+     * @since v859
+     */
+    EASE_IN_BACK,
+    /**
+     * @since v859
+     */
+    EASE_OUT_BACK,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_BACK,
+    /**
+     * @since v859
+     */
+    EASE_IN_ELASTIC,
+    /**
+     * @since v859
+     */
+    EASE_OUT_ELASTIC,
+    /**
+     * @since v859
+     */
+    EASE_IN_OUT_ELASTIC
+}
