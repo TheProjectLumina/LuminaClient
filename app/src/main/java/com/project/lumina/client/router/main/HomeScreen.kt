@@ -955,7 +955,7 @@ fun HomeScreen(
         )
     }
 
-    
+    // Add Server Dialog
     if (showAddServerDialog) {
         com.project.lumina.client.ui.component.AddServerDialog(
             editingServer = editingServer,
@@ -966,7 +966,7 @@ fun HomeScreen(
             onSave = { server ->
                 val customServerManager = com.project.lumina.client.data.CustomServerManager.getInstance()
                 customServerManager.saveServer(server)
-                serverRefreshTrigger++ 
+                serverRefreshTrigger++ // Trigger refresh in ServerSelector
                 showAddServerDialog = false
                 editingServer = null
             }

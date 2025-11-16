@@ -115,7 +115,7 @@ fun SettingsScreen() {
         mutableStateOf(sharedPreferences.getBoolean("devToolsEnabled", false))
     }
 
-    
+    // Listen for DevTools state changes
     DisposableEffect(Unit) {
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == "devToolsEnabled") {
@@ -144,7 +144,7 @@ fun SettingsScreen() {
         mutableStateOf(sharedPreferences.getBoolean("enableLogcatEnabled", false))
     }
 
-    
+    // Update DevTools options when DevTools is disabled
     LaunchedEffect(devToolsEnabled) {
         if (!devToolsEnabled) {
             removeAccountLimitEnabled = false
@@ -152,7 +152,7 @@ fun SettingsScreen() {
             disableAuthRequiredEnabled = false
             enableLogcatEnabled = false
         } else {
-            
+            // Reload values from SharedPreferences when DevTools is re-enabled
             removeAccountLimitEnabled = sharedPreferences.getBoolean("removeAccountLimitEnabled", false)
             disableAutoStartEnabled = sharedPreferences.getBoolean("disableAutoStartEnabled", false)
             disableAuthRequiredEnabled = sharedPreferences.getBoolean("disableAuthRequiredEnabled", false)

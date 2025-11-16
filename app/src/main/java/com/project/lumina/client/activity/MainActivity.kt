@@ -216,7 +216,7 @@ class MainActivity : ComponentActivity() {
         
         requestStoragePermissions()
 
-        
+        // Initialize LogcatService if enabled in DevTools
         LogcatService.checkAndStartIfEnabled()
 
         setContent {

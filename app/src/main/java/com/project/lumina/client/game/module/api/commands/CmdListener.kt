@@ -62,7 +62,7 @@ class CmdListener(private val moduleManager: GameManager) : Element(
 
     fun interceptOutboundPacket(interceptablePacket: InterceptablePacket) {
         if (!isModuleEnabled) {
-         
+         //   Log.d("CmdListener", "Module disabled, skipping packet")
             return
         }
 
@@ -81,7 +81,7 @@ class CmdListener(private val moduleManager: GameManager) : Element(
 
     override fun beforePacketBound(interceptablePacket: InterceptablePacket) {
         if (!isModuleEnabled) {
-           
+           // Log.d("CmdListener", "Module disabled, skipping packet")
             return
         }
 
@@ -148,7 +148,7 @@ class CmdListener(private val moduleManager: GameManager) : Element(
                     return
                 }
 
-                
+                // Check for commands in inbound packets
                 val message = packet.message.trim()
                 if (message.startsWith(PREFIX) && session.isProxyPlayer(packet.sourceName)) {
                     interceptablePacket.isIntercepted = true
@@ -156,13 +156,13 @@ class CmdListener(private val moduleManager: GameManager) : Element(
                     TerminalViewModel.addTerminalLog("GameSession", "Command intercepted: $message")
                 }
             } catch (e: Exception) {
-            
+            //    Log.e("CmdListener", "Error processing TextPacket: ${e.message}", e)
             }
         }
 
         if (packet is PlayerAuthInputPacket) {
             isInGame = true
-           
+           // Log.d("CmdListener", "PlayerAuthInputPacket received, isInGame = true")
         }
     }
 

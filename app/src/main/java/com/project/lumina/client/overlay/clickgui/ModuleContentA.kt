@@ -412,7 +412,7 @@ private fun FloatValueContent(value: FloatValue) {
             valueRange = value.range,
             onValueChange = { newValue ->
                 if (value.value != newValue) {
-                    value.value = newValue 
+                    value.value = newValue // Removed rounding for smoother updates
                 }
             },
             modifier = Modifier.height(20.dp)
@@ -471,7 +471,7 @@ private fun CustomSlider(
     var isDragging by remember { mutableStateOf(false) }
     var localValue by remember(value) { mutableFloatStateOf(value) }
 
-    
+    // Only sync with external value when not dragging
     LaunchedEffect(value) {
         if (!isDragging) {
             localValue = value
@@ -507,7 +507,7 @@ private fun CustomSlider(
                 )
             }
     ) {
-        
+        // Track background
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -516,7 +516,7 @@ private fun CustomSlider(
                 .background(SliderTrackColor, RoundedCornerShape(2.dp))
         )
 
-        
+        // Active track
         val fraction = (localValue - valueRange.start) / (valueRange.endInclusive - valueRange.start)
         val trackWidth = (fraction * sliderWidth).coerceAtLeast(0f)
 
@@ -528,7 +528,7 @@ private fun CustomSlider(
                 .background(SliderActiveTrackColor, RoundedCornerShape(2.dp))
         )
 
-        
+        // Thumb
         val thumbSize = if (isDragging) 14.dp else 12.dp
 
         Box(

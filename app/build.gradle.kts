@@ -18,8 +18,13 @@ android {
         applicationId = "com.project.lumina.client"
         minSdk = 28
         targetSdk = 36
+<<<<<<< HEAD
         versionCode = 7
         versionName = "4.1.6"
+=======
+        versionCode = 6
+        versionName = "4.1.5"
+>>>>>>> 7ecab2664e9649c6e702bacb60cb53c1d0039246
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

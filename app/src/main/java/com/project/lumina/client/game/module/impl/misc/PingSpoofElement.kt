@@ -19,7 +19,7 @@ class PingSpoofElement(iconResId: Int = AssetManager.getAsset("ic_timer_sand_bla
     private val jitter by intValue("Jitter(ms)", 50, 0..200)
     private val tickInterval by intValue("Tick Interval", 1, 1..20)
 
-    private val pendingResponses = HashMap<Long, Long>() 
+    private val pendingResponses = HashMap<Long, Long>() // Key: original server timestamp, Value: scheduled send time
     private val random = Random()
 
     override fun onEnabled() {
@@ -53,7 +53,7 @@ class PingSpoofElement(iconResId: Int = AssetManager.getAsset("ic_timer_sand_bla
         val delay = calculateDelay()
         pendingResponses[packet.timestamp] = System.currentTimeMillis() + delay
 
-        
+        // Prevent memory leaks
         if (pendingResponses.size > 100) {
             pendingResponses.clear()
         }
@@ -65,9 +65,9 @@ class PingSpoofElement(iconResId: Int = AssetManager.getAsset("ic_timer_sand_bla
 
         readyPackets.forEach { (serverTimestamp, _) ->
             session?.serverBound(NetworkStackLatencyPacket().apply {
-                
+                // Multiply by 1M to match vanilla client behavior
                 timestamp = serverTimestamp * 1_000_000
-                
+                // Keep needs_response:1 like vanilla clients do
                 fromServer = true
             })
             pendingResponses.remove(serverTimestamp)

@@ -87,7 +87,7 @@ class LockHeedElement(iconResId: Int = AssetManager.getAsset("ic_lockheed")) : E
         }
 
         val motion = if (player.vec3Position.y < 0.5f) {
-            Vector3f.from(0f, 1.2f, 0f) 
+            Vector3f.from(0f, 1.2f, 0f) // anti-void jump
         } else moveVec
 
         val newPos = player.vec3Position.add(motion)

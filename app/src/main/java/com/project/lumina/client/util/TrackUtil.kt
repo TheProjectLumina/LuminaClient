@@ -1,5 +1,5 @@
 package com.project.lumina.client.util
 
 object TrackUtil {
-    val TRACK_API = "null"
+    val TRACK_API = ""
 }

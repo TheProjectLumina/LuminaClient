@@ -232,6 +232,10 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
             }
 
             is ItemComponentPacket -> {
+<<<<<<< HEAD
+=======
+                // Handle modern protocol itemDefinitions (v776+)
+>>>>>>> 7ecab2664e9649c6e702bacb60cb53c1d0039246
                 try {
                     val itemDefinitions = SimpleDefinitionRegistry.builder<ItemDefinition>()
                         .addAll(packet.items)
