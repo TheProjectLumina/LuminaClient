@@ -1,6 +1,6 @@
 # Lumina Client
 
-![Lumina Client Logo](./images/lumina.jpg)  
+![Lumina Client Logo](./images/lumina.png)  
 [![Download count](https://img.shields.io/github/downloads/TheProjectLumina/LuminaClient/total.svg)](https://github.com/TheProjectLumina/LuminaClient/releases)[![Netlify Status](https://api.netlify.com/api/v1/badges/679c08db-f713-4384-b052-1fd2f90d35f3/deploy-status)](https://app.netlify.com/projects/projectlumina/deploys) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)[![GitHub issues](https://img.shields.io/github/issues/TheProjectLumina/LuminaClient.svg) ](https://github.com/TheProjectLumina/LuminaClient/issues)[![GitHub stars](https://img.shields.io/github/stars/TheProjectLumina/LuminaClient.svg)](https://github.com/TheProjectLumina/LuminaClient/stargazers)[![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?logo=intellij-idea&logoColor=white)](https://www.jetbrains.com/idea/)[![Firebase](https://img.shields.io/badge/Firebase-039BE5?logo=Firebase&logoColor=white)](https://firebase.google.com/)[![Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)](https://developer.android.com/studio)
 
 ## Introduction
@@ -149,6 +149,23 @@ Join our community to connect with other Lumina users and developers:
 - **GitHub**: Report issues or suggest enhancements on our [GitHub Issues page](https://github.com/TheProjectLumina/LuminaClient/issues).
 
 We strive to maintain a welcoming and inclusive community. Please review our [Code of Conduct](https://github.com/TheProjectLumina/LuminaClient/blob/main/CODE_OF_CONDUCT.md) before participating.
+
+---
+
+## Documentation
+
+For detailed technical documentation, architecture diagrams, and in-depth guides:
+
+- **DeepWiki**: Explore our comprehensive [technical documentation](https://deepwiki.com/TheProjectLumina/LuminaClient) covering system architecture, relay system, packet processing, game modules, chunk data management, and more.
+- **Project Website**: Visit [projectlumina.online](https://projectlumina.online/#/docs/overview) for user guides and feature documentation.
+
+The documentation is automatically generated and kept up-to-date with the codebase, providing detailed insights into:
+- Proxy/relay architecture and packet handling
+- Network layer and protocol support
+- Game modules system (combat, motion, visual, world)
+- Chunk data and mapping systems
+- Realms integration and authentication
+- Native components and JNI integration
 
 ---
 

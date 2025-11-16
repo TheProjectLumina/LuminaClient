@@ -10,6 +10,8 @@ import com.project.lumina.client.game.event.EventEntityDespawn
 import com.project.lumina.client.game.event.EventEntitySpawn
 import com.project.lumina.client.game.event.GameEvent
 import com.project.lumina.client.game.event.Listenable
+import com.project.lumina.client.constructors.MobAlertManager
+import com.project.lumina.client.game.entity.MobList
 import org.cloudburstmc.protocol.bedrock.packet.AddEntityPacket
 import org.cloudburstmc.protocol.bedrock.packet.AddItemEntityPacket
 import org.cloudburstmc.protocol.bedrock.packet.AddPlayerPacket
@@ -69,6 +71,13 @@ class Level(val session: NetBound) : Listenable {
                 }
                 entityMap[packet.runtimeEntityId] = entity
                 safeEmit(EventEntitySpawn(session, entity))
+                
+                if (packet.identifier in MobList.mobTypes) {
+                    val mobName = packet.identifier.split(":").lastOrNull()?.replaceFirstChar {
+                        if (it.isLowerCase()) it.titlecase() else it.toString()
+                    } ?: "Unknown"
+                    MobAlertManager.checkMobDetection(mobName)
+                }
             }
 
             is AddItemEntityPacket -> {

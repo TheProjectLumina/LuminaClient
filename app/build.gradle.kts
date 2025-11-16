@@ -18,8 +18,8 @@ android {
         applicationId = "com.project.lumina.client"
         minSdk = 28
         targetSdk = 36
-        versionCode = 4
-        versionName = "4.1.3"
+        versionCode = 7
+        versionName = "4.1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -136,6 +136,7 @@ dependencies {
     implementation("com.amplitude:analytics-android:1.+")
     implementation("com.github.SmartToolFactory:Compose-Colorful-Sliders:1.2.2")
     implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("com.airbnb.android:lottie-compose:6.0.0")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
     implementation(project(":animatedux"))
     implementation(project(":Pixie"))

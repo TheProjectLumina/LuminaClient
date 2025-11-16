@@ -21,9 +21,11 @@ class CoordSnatcherElement : Element(
     
     private val trackedPlayers = mutableSetOf<Long>()
     private val playerCoords = mutableMapOf<Long, Triple<Int, Int, Int>>()
+    private var sessionStartTime = 0L
     
     override fun onEnabled() {
         super.onEnabled()
+        sessionStartTime = System.currentTimeMillis()
         if (isSessionCreated) {
             session.displayClientMessage("§a§lEnabled §eCoord Snatcher§a. Tracking player teleports...")
         }
@@ -66,6 +68,11 @@ class CoordSnatcherElement : Element(
             val z = floor(position.z).toInt()
 
             Log.d("CoordSnatcher", "Processing teleport packet for runtimeId: $runtimeId to position: ($x, $y, $z)")
+
+            if (System.currentTimeMillis() - sessionStartTime < 2000) {
+                Log.d("CoordSnatcher", "Ignoring early teleport during initialization period")
+                return
+            }
 
             if (session.level.entityMap.isEmpty()) {
                 Log.d("CoordSnatcher", "Entity map is empty, cannot process teleport packet")

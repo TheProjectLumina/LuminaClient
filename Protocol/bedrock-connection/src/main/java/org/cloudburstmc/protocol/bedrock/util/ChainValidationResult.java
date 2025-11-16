@@ -1,5 +1,6 @@
 package org.cloudburstmc.protocol.bedrock.util;
 
+import lombok.ToString;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwt.JwtClaims;
@@ -100,6 +101,7 @@ public final class ChainValidationResult {
         );
     }
 
+    @ToString
     public static final class IdentityClaims {
         public final IdentityData extraData;
         public final String identityPublicKey;
@@ -118,6 +120,7 @@ public final class ChainValidationResult {
         }
     }
 
+    @ToString
     public static final class IdentityData {
         public final String displayName;
         /**

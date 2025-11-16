@@ -14,7 +14,7 @@ import static org.cloudburstmc.protocol.bedrock.packet.AnimatePacket.Action;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AnimateSerializer_v291 implements BedrockPacketSerializer<AnimatePacket> {
     public static final AnimateSerializer_v291 INSTANCE = new AnimateSerializer_v291();
-    private static final Int2ObjectBiMap<Action> types = new Int2ObjectBiMap<>();
+    protected static final Int2ObjectBiMap<Action> types = new Int2ObjectBiMap<>();
 
     static {
         types.put(0, Action.NO_ACTION);

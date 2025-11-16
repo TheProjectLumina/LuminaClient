@@ -356,26 +356,39 @@ fun AboutScreen() {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     getLuminaTechnicalInfo(context).forEach { (key, value) ->
+                        val isVersionKey = key == "Version"
+                        val isVersionCodeKey = key == "Version Code"
+
                         InfoItem(
                             label = key,
                             value = value,
-                            isClickable = key == "Version",
-                            onClick = if (key == "Version") {
-                                {
-                                    if (devToolsEnabled) {
-                                        Toast.makeText(context, "Developer tools already enabled", Toast.LENGTH_SHORT).show()
-                                    } else {
-                                        tapCount += 1
-                                        Toast.makeText(context, "Tap ${7 - tapCount} more times to enable dev tools", Toast.LENGTH_SHORT).show()
-                                        if (tapCount >= 7) {
-                                            sharedPreferences.edit().putBoolean("devToolsEnabled", true).apply()
-                                            devToolsEnabled = true
-                                            Toast.makeText(context, "Developer tools enabled", Toast.LENGTH_SHORT).show()
+                            isClickable = isVersionKey || isVersionCodeKey,
+                            onClick = when {
+                                isVersionKey -> {
+                                    {
+                                        if (devToolsEnabled) {
+                                            Toast.makeText(context, "Developer tools already enabled", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            tapCount += 1
+                                            Toast.makeText(context, "Tap ${7 - tapCount} more times to enable dev tools", Toast.LENGTH_SHORT).show()
+                                            if (tapCount >= 7) {
+                                                sharedPreferences.edit().putBoolean("devToolsEnabled", true).apply()
+                                                devToolsEnabled = true
+                                                Toast.makeText(context, "Developer tools enabled", Toast.LENGTH_SHORT).show()
+                                            }
                                         }
                                     }
                                 }
-                            } else null,
-                            onLongClick = if (key == "Version") {
+
+                                isVersionCodeKey -> {
+                                    {
+                                        throw RuntimeException("Oops, you found this bug ig")
+                                    }
+                                }
+
+                                else -> null
+                            },
+                            onLongClick = if (isVersionKey) {
                                 {
                                     if (devToolsEnabled) {
                                         with(sharedPreferences.edit()) {

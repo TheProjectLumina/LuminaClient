@@ -50,7 +50,10 @@ public class LoginSerializer_v818 extends LoginSerializer_v291 {
             }
             AuthType authType = AuthType.values()[authTypeOrdinal + 1];
 
-            if (payload.containsKey("Certificate") && payload.get("Certificate") instanceof String && !((String) payload.get("Certificate")).isEmpty()) {
+            if (payload.containsKey("Token") && payload.get("Token") instanceof String && !((String) payload.get("Token")).isEmpty()) {
+                String token = (String) payload.get("Token");
+                return new TokenPayload(token, authType);
+            } else if (payload.containsKey("Certificate") && payload.get("Certificate") instanceof String && !((String) payload.get("Certificate")).isEmpty()) {
                 String certJson = (String) payload.get("Certificate");
                 Map<String, Object> certData = JsonUtil.parseJson(certJson);
                 if (!certData.containsKey("chain") || !(certData.get("chain") instanceof List)) {
@@ -58,9 +61,6 @@ public class LoginSerializer_v818 extends LoginSerializer_v291 {
                 }
                 List<String> chain = (List<String>) certData.get("chain");
                 return new CertificateChainPayload(chain, authType);
-            } else if (payload.containsKey("Token") && payload.get("Token") instanceof String && !((String) payload.get("Token")).isEmpty()) {
-                String token = (String) payload.get("Token");
-                return new TokenPayload(token, authType);
             } else {
                 throw new IllegalArgumentException("Invalid AuthPayload in JWT");
             }

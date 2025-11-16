@@ -1,7 +1,10 @@
 package com.project.lumina.client.util
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
+import com.project.lumina.client.activity.CrashHandlerActivity
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -21,11 +24,15 @@ class UpdateCheck {
     private external fun retrieveFallback(): String
     private external fun verifySignature(payload: String): Boolean
 
-    fun initiateHandshake(context: Activity) {
+    fun initiateHandshake(context: Activity, allowOffline: Boolean = false) {
+        if (context is CrashHandlerActivity) {
+            return
+        }
+
         val endpoint = try {
             resolveEndpoint()
         } catch (_: Throwable) {
-            terminateSafely(context)
+            handleConnectionError(context)
             return
         }
 
@@ -41,10 +48,30 @@ class UpdateCheck {
                     }
                     terminateSafely(context)
                 }
-            } catch (_: Throwable) {
-                terminateSafely(context)
+            } catch (e: Throwable) {
+                handleConnectionError(context)
             }
         }.start()
+    }
+
+    private fun handleConnectionError(context: Activity) {
+        if (context is CrashHandlerActivity) {
+            return
+        }
+
+        if (!context.isFinishing && !context.isDestroyed) {
+            context.runOnUiThread {
+                Toast.makeText(
+                    context,
+                    "No internet connection detected.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                terminateSafely(context)
+            }, 500)
+        }
     }
 
     private fun terminateSafely(context: Activity) {

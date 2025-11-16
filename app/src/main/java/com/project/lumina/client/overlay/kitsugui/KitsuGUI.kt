@@ -409,7 +409,7 @@ class KitsuGUI : OverlayWindow() {
 
                         AnimatedCat(
                             modifier = Modifier.padding(end = 8.dp),
-                            size = 24
+                            size = 56
                         )
 
                         ModernActionButton(

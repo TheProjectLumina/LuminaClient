@@ -519,6 +519,16 @@ private fun joinRealmAndSelect(
             .thenAccept { addressString ->
                 Log.d(REALMS_TAG, "Successfully joined Realm: ${world.name}, address: $addressString")
 
+                if (isNethernetAddress(addressString)) {
+                    Log.w(REALMS_TAG, "Realm ${world.name} uses Nethernet protocol (address: $addressString)")
+                    SimpleOverlayNotification.show(
+                        message = "Nethernet Realms are not supported yet",
+                        type = NotificationType.WARNING,
+                        durationMs = 4000
+                    )
+                    return@thenAccept
+                }
+
                 val parts = addressString.split(":")
                 val serverAddress = parts[0]
                 val serverPort = if (parts.size > 1) parts[1].toIntOrNull() ?: 19132 else 19132
@@ -594,4 +604,9 @@ private fun loadSavedRealmSelection(context: Context): String? {
         Log.e(REALMS_TAG, "Error loading realm selection", e)
         null
     }
+}
+
+private fun isNethernetAddress(address: String): Boolean {
+    val uuidPattern = Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", RegexOption.IGNORE_CASE)
+    return uuidPattern.matches(address)
 }

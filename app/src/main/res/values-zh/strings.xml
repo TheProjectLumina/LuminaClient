@@ -148,6 +148,7 @@
     <!-- Module Display Name strings -->
     <string name="module_anti_crystal_display_name">反水晶</string>
     <string name="module_autototem_display_name">自动图腾</string>
+    <string name="module_autoarmor_display_name">自动盔甲</string>
     <string name="module_logcat_display_name">日志查看器</string>
     <string name="module_weather_controller_display_name">天气控制器</string>
     <string name="module_killaura_display_name">杀戮光环</string>
@@ -164,7 +165,6 @@
     <string name="module_nofire">无火焰</string>
     <string name="module_targethud">目标HUD</string>
     <string name="module_skin_downloader_display_name">皮肤下载器</string>
-    <string name="module_auto_xp_display_name">自动经验</string>
     <string name="module_air_jump_display_name">空中跳跃</string>
     <string name="module_anti_afk_display_name">防挂机</string>
     <string name="module_auto_walk_display_name">自动行走</string>
@@ -222,6 +222,7 @@
     <string name="module_text_spoof_display_name">文本伪装</string>
     <string name="module_fakeping_display_name">延迟伪装</string>
     <string name="module_chest_stealer_display_name">箱子偷取器</string>
+    <string name="module_invhelper_display_name">背包助手</string>
 
     <!-- Config Module Strings -->
     <string name="module_config_manager">配置管理器</string>

@@ -547,107 +547,6 @@ fun HomeScreen(
                                     }
                                 }
                             }
-                        } else if (AccountManager.accounts.isNotEmpty()) {
-
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .fillMaxHeight(if (isCompactScreen) 0.35f else 0.4f)
-                                    .animateContentSize(
-                                        animationSpec = spring(
-                                            dampingRatio = 0.7f,
-                                            stiffness = 400f
-                                        )
-                                    ),
-                                shape = RoundedCornerShape(16.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                tonalElevation = 1.dp
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(if (isCompactScreen) 12.dp else 16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(if (isCompactScreen) 8.dp else 12.dp)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(if (isCompactScreen) 8.dp else 12.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.AccountCircle,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(if (isCompactScreen) 18.dp else 24.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                        Text(
-                                            text = "Select an Account",
-                                            style = if (isCompactScreen)
-                                                MaterialTheme.typography.bodyLarge else
-                                                MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Medium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-
-                                    Divider(
-                                        color = MaterialTheme.colorScheme.outlineVariant.copy(
-                                            alpha = 0.5f
-                                        )
-                                    )
-
-
-                                    LazyColumn(
-                                        modifier = Modifier.heightIn(
-                                            max = min(screenHeight.times(0.3f), 200.dp)
-                                        ),
-                                        verticalArrangement = Arrangement.spacedBy(if (isCompactScreen) 6.dp else 8.dp)
-                                    ) {
-                                        items(AccountManager.accounts) { account ->
-                                            Surface(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .clip(RoundedCornerShape(12.dp))
-                                                    .clickable {
-                                                        if (account == AccountManager.currentAccount) {
-                                                            AccountManager.selectAccount(null)
-                                                        } else {
-                                                            AccountManager.selectAccount(account)
-                                                        }
-                                                    },
-                                                color = MaterialTheme.colorScheme.surface,
-                                                tonalElevation = 2.dp
-                                            ) {
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(
-                                                            horizontal = if (isCompactScreen) 8.dp else 12.dp,
-                                                            vertical = if (isCompactScreen) 8.dp else 10.dp
-                                                        ),
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(if (isCompactScreen) 8.dp else 12.dp)
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Rounded.AccountCircle,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(if (isCompactScreen) 16.dp else 20.dp),
-                                                        tint = MaterialTheme.colorScheme.primary
-                                                    )
-                                                    Text(
-                                                        text = account.remark,
-                                                        style = if (isCompactScreen)
-                                                            MaterialTheme.typography.bodyMedium else
-                                                            MaterialTheme.typography.bodyLarge,
-                                                        fontWeight = FontWeight.Medium,
-                                                        color = MaterialTheme.colorScheme.onSurface
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
 
@@ -1527,6 +1426,13 @@ private fun joinRealm(
             .thenApply { address -> address.toString() }
             .thenAccept { addressString ->
                 Log.d(REALMS_TAG, "Successfully joined Realm ${world.name}, address: $addressString")
+                
+                if (isNethernetAddress(addressString)) {
+                    Log.w(REALMS_TAG, "Realm ${world.name} uses Nethernet protocol (address: $addressString)")
+                    callback(null, "Nethernet Realms are not supported yet")
+                    return@thenAccept
+                }
+                
                 callback(addressString, null)
             }
             .exceptionally { throwable ->
@@ -1538,4 +1444,9 @@ private fun joinRealm(
         Log.e(REALMS_TAG, "Exception creating BedrockRealmsService", e)
         callback(null, RealmErrorHandler.translateJoinError(e))
     }
+}
+
+private fun isNethernetAddress(address: String): Boolean {
+    val uuidPattern = Regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", RegexOption.IGNORE_CASE)
+    return uuidPattern.matches(address)
 }

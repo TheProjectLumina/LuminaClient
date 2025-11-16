@@ -1,5 +1,6 @@
 package com.project.lumina.client.activity
 
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -18,6 +19,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.project.lumina.client.router.launch.AnimatedLauncherScreen
 import com.project.lumina.client.ui.theme.LuminaClientTheme
 import com.project.lumina.client.util.HashCat
+import com.project.lumina.client.util.SessionManager
 import com.project.lumina.client.util.TrackUtil
 import com.project.lumina.client.util.UpdateCheck
 import kotlinx.coroutines.delay
@@ -37,7 +39,8 @@ class LaunchActivity : ComponentActivity() {
             )
         )
         amplitude.track("Launch Activity Init")
-
+        val sessionManager = SessionManager(applicationContext)
+        sessionManager.checkSession(this)
         val updateCheck = UpdateCheck()
         updateCheck.initiateHandshake(this)
 
@@ -65,8 +68,6 @@ class LaunchActivity : ComponentActivity() {
 
     }
 }
-
-
 
 suspend fun startActivityWithTransition(context: android.content.Context, destinationClass: Class<*>) {
     delay(800)

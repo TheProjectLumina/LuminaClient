@@ -65,21 +65,20 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
 
         <activity
-            android:name=".activity.RealmsActivity"
+            android:name=".activity.LVAuthWebViewActivity"
             android:exported="true"
-            android:screenOrientation="portrait">
-
-        </activity>
+            android:theme="@style/Theme.Material3.DayNight"/>
         <activity
             android:name=".activity.VersionCheckerActivity"
             android:exported="false"
             android:screenOrientation="landscape" />
         <activity
             android:name=".activity.MainActivity"
-            android:exported="false"
+            android:exported="true"
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.OPEN_DOCUMENT" />

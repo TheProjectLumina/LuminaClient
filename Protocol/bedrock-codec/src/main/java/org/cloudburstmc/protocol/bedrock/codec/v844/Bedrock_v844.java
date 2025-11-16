@@ -48,7 +48,7 @@ public class Bedrock_v844 extends Bedrock_v827 {
     public static final BedrockCodec CODEC = Bedrock_v827.CODEC.toBuilder()
             .raknetProtocolVersion(11)
             .protocolVersion(844)
-            .minecraftVersion("1.21.110")
+            .minecraftVersion("1.21.111")
             .helper(() -> new BedrockCodecHelper_v844(ENTITY_DATA, GAME_RULE_TYPES, ITEM_STACK_REQUEST_TYPES, CONTAINER_SLOT_TYPES, PLAYER_ABILITIES, TEXT_PROCESSING_ORIGINS))
             .updateSerializer(BiomeDefinitionListPacket.class, BiomeDefinitionListSerializer_v844.INSTANCE)
             .updateSerializer(LevelEventPacket.class, new LevelEventSerializer_v291(LEVEL_EVENTS))

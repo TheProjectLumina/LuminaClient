@@ -99,7 +99,8 @@ class FreeCameraElement(iconResId: Int = AssetManager.getAsset("ic_movie_open_bl
                     Ability.MAY_FLY,
                     Ability.FLY_SPEED,
                     Ability.WALK_SPEED,
-                    Ability.FLYING
+                    Ability.FLYING,
+                    Ability.NO_CLIP
                 )
             )
             walkSpeed = 0.1f

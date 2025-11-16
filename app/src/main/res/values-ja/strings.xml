@@ -148,6 +148,7 @@
     <!-- Module Display Name strings -->
     <string name="module_anti_crystal_display_name">アンチクリスタル</string>
     <string name="module_autototem_display_name">オートトーテム</string>
+    <string name="module_autoarmor_display_name">オートアーマー</string>
     <string name="module_logcat_display_name">ログキャット</string>
     <string name="module_weather_controller_display_name">ウェザーコントローラー</string>
     <string name="module_killaura_display_name">キルオーラ</string>
@@ -164,7 +165,6 @@
     <string name="module_nofire">ノーファイア</string>
     <string name="module_targethud">ターゲットHUD</string>
     <string name="module_skin_downloader_display_name">スキンダウンローダー</string>
-    <string name="module_auto_xp_display_name">オートXP</string>
     <string name="module_air_jump_display_name">エアジャンプ</string>
     <string name="module_anti_afk_display_name">アンチAFK</string>
     <string name="module_auto_walk_display_name">オートウォーク</string>
@@ -222,6 +222,7 @@
     <string name="module_text_spoof_display_name">テキストスプーフ</string>
     <string name="module_fakeping_display_name">ピンスプーフ</string>
     <string name="module_chest_stealer_display_name">チェストスティーラー</string>
+    <string name="module_invhelper_display_name">インベントリヘルパー</string>
 
     <!-- Config Module Strings -->
     <string name="module_config_manager">設定マネージャー</string>

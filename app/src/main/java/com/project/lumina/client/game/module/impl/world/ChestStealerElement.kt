@@ -1,5 +1,4 @@
 package com.project.lumina.client.game.module.impl.world
-import android.util.Log
 import com.project.lumina.client.R
 import com.project.lumina.client.constructors.CheatCategory
 import com.project.lumina.client.constructors.Element
@@ -7,39 +6,32 @@ import com.project.lumina.client.game.InterceptablePacket
 import com.project.lumina.client.game.inventory.ContainerInventory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.cloudburstmc.protocol.bedrock.data.inventory.ContainerType
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData
 import org.cloudburstmc.protocol.bedrock.packet.ContainerClosePacket
 import org.cloudburstmc.protocol.bedrock.packet.ContainerOpenPacket
 import org.cloudburstmc.protocol.bedrock.packet.InventoryContentPacket
-import org.cloudburstmc.protocol.bedrock.packet.NetworkStackLatencyPacket
-import java.util.ArrayDeque
 class ChestStealerElement : Element(
     name = "ChestStealer",
     category = CheatCategory.World,
     displayNameResId = R.string.module_chest_stealer_display_name
 ) {
-    companion object {
-        private const val TAG = "ChestStealer"
-    }
     private val autoClose by boolValue("Auto Close", true)
-    private val useDelay by boolValue("Use Delay", false)
+    private val delayMs by intValue("Delay", 50, 1..1000)
     private var currentContainer: ContainerInventory? = null
     private var isStealingInProgress = false
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
-    private var currentLatency = 100L
-    private val latencyHistory = ArrayDeque<Long>(10)
-    private var lastLatencyUpdate = 0L
+
+    companion object {
+        var isActivelyStealingFromChest = false
+            private set
+    }
     override fun beforePacketBound(interceptablePacket: InterceptablePacket) {
         if (!isEnabled) return
         val packet = interceptablePacket.packet
         when (packet) {
-            is NetworkStackLatencyPacket -> {
-                if (packet.fromServer) {
-                    handleLatencyPacket(packet)
-                }
-            }
             is ContainerOpenPacket -> {
                 if (isValidChestContainer(packet.type)) {
                     handleChestOpen(packet)
@@ -60,23 +52,6 @@ class ChestStealerElement : Element(
             }
         }
     }
-    private fun handleLatencyPacket(packet: NetworkStackLatencyPacket) {
-        if (!useDelay) return
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastLatencyUpdate > 1000) {
-            val latency = (currentTime - (packet.timestamp / 1_000_000)).coerceAtLeast(1L)
-            latencyHistory.offer(latency)
-            if (latencyHistory.size > 10) {
-                latencyHistory.poll()
-            }
-            currentLatency = if (latencyHistory.isEmpty()) {
-                100L
-            } else {
-                latencyHistory.average().toLong()
-            }
-            lastLatencyUpdate = currentTime
-        }
-    }
     private fun isValidChestContainer(type: ContainerType): Boolean {
         return when (type) {
             ContainerType.CONTAINER,
@@ -91,6 +66,7 @@ class ChestStealerElement : Element(
     private fun handleChestOpen(packet: ContainerOpenPacket) {
         currentContainer = ContainerInventory(packet.id.toInt(), packet.type)
         isStealingInProgress = false
+        isActivelyStealingFromChest = true
     }
     private fun startStealing() {
         if (isStealingInProgress || currentContainer == null) {
@@ -114,41 +90,29 @@ class ChestStealerElement : Element(
     private suspend fun stealAllItems() {
         val container = currentContainer ?: return
         val playerInventory = session.localPlayer.inventory
-        var itemsStolen = 0
-        var itemsSkipped = 0
-        val validSlots = container.content.indices.filter { slot ->
-            val item = container.content[slot]
-            item != ItemData.AIR && item.count > 0 && item.isValid
-        }
-        for (slot in validSlots) {
-            if (!isEnabled || (!isStealingInProgress && autoClose)) {
+        
+        while (isEnabled && isStealingInProgress) {
+            val itemSlot = findNextItemSlot(container) ?: break
+            
+            val emptySlot = playerInventory.findEmptySlot()
+            if (emptySlot == null) {
                 break
             }
-            val item = container.content[slot]
-            if (item != ItemData.AIR && item.count > 0 && item.isValid) {
-                val emptySlot = playerInventory.findEmptySlot()
-                if (emptySlot != null) {
-                    try {
-                        container.moveItem(slot, emptySlot, playerInventory, session)
-                        val containerSlotAfterMove = container.content[slot]
-                        val playerSlotAfterMove = playerInventory.content[emptySlot]
-                        val moveSuccessful = (containerSlotAfterMove == ItemData.AIR || containerSlotAfterMove.count < container.content[slot].count) &&
-                                (playerSlotAfterMove.definition?.identifier == item.definition?.identifier)
-                        if (moveSuccessful) {
-                            itemsStolen++
-                        } else {
-                            itemsSkipped++
-                        }
-                    } catch (e: Exception) {
-                        itemsSkipped++
-                        continue
-                    }
-                } else {
-                    break
-                }
-            } else {
-                itemsSkipped++
+            
+            try {
+                container.moveItem(itemSlot, emptySlot, playerInventory, session)
+                delay(delayMs.toLong())
+            } catch (e: Exception) {
+                delay(delayMs.toLong())
+                continue
             }
+        }
+    }
+    
+    private fun findNextItemSlot(container: ContainerInventory): Int? {
+        return container.content.indices.firstOrNull { slot ->
+            val item = container.content[slot]
+            item != ItemData.AIR && item.count > 0 && item.isValid
         }
     }
     private suspend fun closeChest() {
@@ -167,15 +131,11 @@ class ChestStealerElement : Element(
     private fun cleanup() {
         currentContainer = null
         isStealingInProgress = false
+        isActivelyStealingFromChest = false
     }
-    private fun resetLatencyTracking() {
-        currentLatency = 100L
-        latencyHistory.clear()
-        lastLatencyUpdate = 0L
-    }
+    
     override fun onDisabled() {
         super.onDisabled()
         cleanup()
-        resetLatencyTracking()
     }
 }

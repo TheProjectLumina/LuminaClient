@@ -5,6 +5,8 @@ import com.project.lumina.client.constructors.Element
 import com.project.lumina.client.game.InterceptablePacket
 import com.project.lumina.client.util.AssetManager
 import org.cloudburstmc.math.vector.Vector3f
+import org.cloudburstmc.protocol.bedrock.data.Ability
+import org.cloudburstmc.protocol.bedrock.data.AbilityLayer
 import org.cloudburstmc.protocol.bedrock.data.PlayerAuthInputData
 import org.cloudburstmc.protocol.bedrock.data.PlayerPermission
 import org.cloudburstmc.protocol.bedrock.data.command.CommandPermission
@@ -35,12 +37,51 @@ class MotionFlyElement(iconResId: Int = AssetManager.getAsset("ic_flash_black_24
         playerPermission = PlayerPermission.OPERATOR
         commandPermission = CommandPermission.OWNER
         uniqueEntityId = -1
+        abilityLayers.add(AbilityLayer().apply {
+            layerType = AbilityLayer.Type.BASE
+            abilitiesSet.addAll(Ability.entries.toTypedArray())
+            abilityValues.addAll(
+                arrayOf(
+                    Ability.BUILD,
+                    Ability.MINE,
+                    Ability.DOORS_AND_SWITCHES,
+                    Ability.OPEN_CONTAINERS,
+                    Ability.ATTACK_PLAYERS,
+                    Ability.ATTACK_MOBS,
+                    Ability.OPERATOR_COMMANDS,
+                    Ability.MAY_FLY,
+                    Ability.FLY_SPEED,
+                    Ability.WALK_SPEED
+                )
+            )
+            walkSpeed = 0.1f
+            flySpeed = 0.5f
+        })
     }
 
     private val resetPacket = UpdateAbilitiesPacket().apply {
         playerPermission = PlayerPermission.VISITOR
         commandPermission = CommandPermission.ANY
         uniqueEntityId = -1
+        abilityLayers.add(AbilityLayer().apply {
+            layerType = AbilityLayer.Type.BASE
+            abilitiesSet.addAll(Ability.entries.toTypedArray())
+            abilityValues.addAll(
+                arrayOf(
+                    Ability.BUILD,
+                    Ability.MINE,
+                    Ability.DOORS_AND_SWITCHES,
+                    Ability.OPEN_CONTAINERS,
+                    Ability.ATTACK_PLAYERS,
+                    Ability.ATTACK_MOBS,
+                    Ability.OPERATOR_COMMANDS,
+                    Ability.FLY_SPEED,
+                    Ability.WALK_SPEED
+                )
+            )
+            walkSpeed = 0.1f
+            flySpeed = 0.05f
+        })
     }
 
     private fun applyFlyAbilities(enabled: Boolean) {

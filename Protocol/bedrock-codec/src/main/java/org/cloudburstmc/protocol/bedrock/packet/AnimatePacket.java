@@ -12,6 +12,10 @@ public class AnimatePacket implements BedrockPacket {
     public float rowingTime;
     public Action action;
     public long runtimeEntityId;
+    /**
+     * @since v859
+     */
+    public float data;
 
     @Override
     public final PacketSignal handle(BedrockPacketHandler handler) {

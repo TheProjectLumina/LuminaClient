@@ -62,7 +62,7 @@ open class EncryptedLoginPacketListener : LuminaRelayPacketListener {
                 }
 
                 loginPacket?.let { luminaRelaySession.serverBoundImmediately(it) }
-                    ?: luminaRelaySession.server.disconnect("LoginPacket is null") 
+                    ?: luminaRelaySession.server.disconnect("LoginPacket is null") // Fixed here
                 return true
             }
             is ServerToClientHandshakePacket -> {

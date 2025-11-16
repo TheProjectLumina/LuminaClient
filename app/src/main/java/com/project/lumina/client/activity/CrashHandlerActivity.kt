@@ -10,12 +10,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,13 +21,11 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -80,20 +75,9 @@ class CrashHandlerActivity : ComponentActivity() {
                                 )
                             },
                             colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer,
-                                titleContentColor = MaterialTheme.colorScheme.onErrorContainer
-                            ),
-                            actions = {
-                                IconButton(onClick = {
-                                    copyToClipboard(context, crashMessage)
-                                    Toast.makeText(context, context.getString(R.string.crash_copied), Toast.LENGTH_SHORT).show()
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.ContentCopy,
-                                        contentDescription = stringResource(R.string.copy_crash_log)
-                                    )
-                                }
-                            }
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
                     },
                     floatingActionButton = {
@@ -141,7 +125,6 @@ class CrashHandlerActivity : ComponentActivity() {
                         modifier = Modifier
                             .padding(paddingValues)
                             .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
                             .padding(16.dp)
                     ) {
                         Text(
@@ -150,12 +133,11 @@ class CrashHandlerActivity : ComponentActivity() {
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
 
-
                         parts.errorMessage?.let { errorMsg ->
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
                                 tonalElevation = 4.dp,
-                                color = MaterialTheme.colorScheme.errorContainer,
+                                color = MaterialTheme.colorScheme.surfaceVariant,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(bottom = 16.dp)
@@ -165,30 +147,71 @@ class CrashHandlerActivity : ComponentActivity() {
                                         text = errorMsg,
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
                         }
 
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            tonalElevation = 2.dp,
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                SelectionContainer {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .verticalScroll(rememberScrollState())
+                                            .padding(16.dp)
+                                    ) {
+                                        Text(
+                                            text = buildString {
+                                                if (parts.deviceInfo.isNotEmpty()) {
+                                                    append(parts.deviceInfo)
+                                                    append("\n\n")
+                                                }
+                                                if (parts.threadInfo.isNotEmpty()) {
+                                                    append(parts.threadInfo)
+                                                    append("\n\n")
+                                                }
+                                                if (parts.stackTrace.isNotEmpty()) {
+                                                    append(parts.stackTrace)
+                                                }
+                                            },
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(end = 48.dp, bottom = 48.dp)
+                                        )
+                                    }
+                                }
 
-                        ExpandableSection(
-                            title = stringResource(R.string.device_info),
-                            content = parts.deviceInfo
-                        )
 
-
-                        ExpandableSection(
-                            title = stringResource(R.string.thread_info),
-                            content = parts.threadInfo
-                        )
-
-
-                        ExpandableSection(
-                            title = stringResource(R.string.stack_trace),
-                            content = parts.stackTrace,
-                            initiallyExpanded = false
-                        )
+                                IconButton(
+                                    onClick = {
+                                        copyToClipboard(context, crashMessage)
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.crash_copied),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ContentCopy,
+                                        contentDescription = stringResource(R.string.copy_crash_log),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -268,68 +291,4 @@ class CrashHandlerActivity : ComponentActivity() {
         val threadInfo: String,
         val stackTrace: String
     )
-}
-
-@Composable
-fun ExpandableSection(
-    title: String,
-    content: String,
-    initiallyExpanded: Boolean = true
-) {
-    var expanded by remember { mutableStateOf(initiallyExpanded) }
-    val rotationState by animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        label = "rotation"
-    )
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(8.dp),
-        tonalElevation = 2.dp
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
-                )
-
-                IconButton(onClick = { expanded = !expanded }) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = if (expanded) "Collapse" else "Expand",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.rotate(rotationState)
-                    )
-                }
-            }
-
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                SelectionContainer {
-                    Text(
-                        text = content,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    )
-                }
-            }
-        }
-    }
 }

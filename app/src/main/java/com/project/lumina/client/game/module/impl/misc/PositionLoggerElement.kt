@@ -3,12 +3,16 @@ package com.project.lumina.client.game.module.impl.misc
 import com.project.lumina.client.game.InterceptablePacket
 import com.project.lumina.client.constructors.Element
 import com.project.lumina.client.constructors.CheatCategory
+import com.project.lumina.client.game.entity.Entity
+import com.project.lumina.client.game.entity.EntityUnknown
+import com.project.lumina.client.game.entity.Player
 import com.project.lumina.client.util.AssetManager
 import net.kyori.adventure.text.Component
 import org.cloudburstmc.math.vector.Vector3f
 import org.cloudburstmc.protocol.bedrock.packet.MoveEntityAbsolutePacket
 import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket
 import org.cloudburstmc.protocol.bedrock.packet.TextPacket
+import java.util.Locale
 import kotlin.math.atan2
 import kotlin.math.ceil
 import kotlin.math.sqrt
@@ -34,7 +38,7 @@ class PositionLoggerElement : Element(
         if (packet is PlayerAuthInputPacket) {
             playerPosition = packet.position
 
-            
+
             var closestEntityId: Long? = null
             var closestDistance = Float.MAX_VALUE
             var closestEntityPosition: Vector3f? = null
@@ -48,12 +52,13 @@ class PositionLoggerElement : Element(
                 }
             }
 
-            
+
             if (closestEntityId != null && closestEntityPosition != null) {
+                val name = getEntityName(closestEntityId!!)
                 val roundedPosition = closestEntityPosition!!.roundUpCoordinates()
                 val roundedDistance = ceil(closestDistance)
                 val direction = getCompassDirection(playerPosition, closestEntityPosition!!)
-                sendMessage("§l§b[PositionLogger]§r §eClosest entity at §a$roundedPosition §e| Distance: §c$roundedDistance §e| Direction: §d$direction")
+                sendMessage("§l§b[PositionLogger]§r §eClosest entity: §f$name §eat §a$roundedPosition §e| Distance: §c$roundedDistance §e| Direction: §d$direction")
             }
         }
 
@@ -64,7 +69,18 @@ class PositionLoggerElement : Element(
         }
     }
 
-    
+
+    private fun getEntityName(entityId: Long): String {
+        val entity = session.level.entityMap[entityId] ?: return "Unknown"
+        return when (entity) {
+            is Player -> session.level.playerMap[entity.uuid]?.name?.toString()?.takeIf { it.isNotBlank() } ?: "Player"
+            is EntityUnknown -> entity.identifier.split(":").lastOrNull()?.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            } ?: "Unknown"
+            else -> entity.javaClass.simpleName
+        }
+    }
+
     private fun calculateDistance(from: Vector3f, to: Vector3f): Float {
         val dx = from.x - to.x
         val dy = from.y - to.y
@@ -72,7 +88,7 @@ class PositionLoggerElement : Element(
         return sqrt((dx * dx + dy * dy + dz * dz).toDouble()).toFloat()
     }
 
-    
+
     private fun Vector3f.roundUpCoordinates(): String {
         val roundedX = ceil(this.x).toInt()
         val roundedY = ceil(this.y).toInt()
@@ -80,7 +96,7 @@ class PositionLoggerElement : Element(
         return "($roundedX, $roundedY, $roundedZ)"
     }
 
-    
+
     private fun getCompassDirection(from: Vector3f, to: Vector3f): String {
         val dx = to.x - from.x
         val dz = to.z - from.z
@@ -100,15 +116,18 @@ class PositionLoggerElement : Element(
         }
     }
 
-    
+
     private fun sendMessage(msg: String) {
         val textPacket = TextPacket().apply {
             type = TextPacket.Type.RAW
-           
+
             message = msg
             xuid = ""
             sourceName = ""
         }
         session.clientBound(textPacket)
     }
+
+
+
 }

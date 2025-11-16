@@ -54,7 +54,7 @@ class XboxLoginPacketListener(
                     ?: throw IllegalStateException("Invalid clientJwt format")
                 packet.clientJwt = signJWT(clientJwtPayload, keyPair, base64Encoded = true)
             } catch (e: Throwable) {
-                
+                // Use reflection to set private field since no setter exists
                 val disconnectPacket = DisconnectPacket()
                 val field = disconnectPacket.javaClass.getDeclaredField("kickMessage")
                 field.isAccessible = true

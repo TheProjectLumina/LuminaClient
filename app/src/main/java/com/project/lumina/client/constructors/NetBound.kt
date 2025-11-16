@@ -3,13 +3,16 @@ package com.project.lumina.client.constructors
 import android.util.Log
 import com.project.lumina.client.application.AppContext
 import com.project.lumina.client.game.InterceptablePacket
+import com.project.lumina.client.game.entity.EntityUnknown
 import com.project.lumina.client.game.entity.LocalPlayer
+import com.project.lumina.client.game.entity.MobList
 import com.project.lumina.client.game.event.EventManager
 import com.project.lumina.client.game.event.EventPacketInbound
 import com.project.lumina.client.game.registry.BlockMapping
 import com.project.lumina.client.game.registry.BlockMappingProvider
 import com.project.lumina.client.game.world.Level
 import com.project.lumina.client.game.world.World
+import com.project.lumina.client.overlay.manager.OverlayManager
 import com.project.lumina.client.overlay.mods.MiniMapOverlay
 import com.project.lumina.client.overlay.mods.OverlayModuleList
 import com.project.lumina.client.overlay.mods.PacketNotificationOverlay
@@ -23,6 +26,10 @@ import com.project.lumina.client.game.registry.LegacyBlockMapping
 import com.project.lumina.client.game.registry.LegacyBlockMappingProvider
 import com.project.lumina.client.overlay.mods.KeystrokesOverlay
 import com.project.lumina.client.overlay.mods.TargetHudOverlay
+import com.project.lumina.client.overlay.mods.TopCenterOverlayNotification
+import com.project.lumina.client.overlay.mods.SelectedMobDialogOverlay
+import com.project.lumina.client.game.module.impl.EntityRadarElement
+import com.project.lumina.client.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,6 +46,8 @@ import org.cloudburstmc.protocol.bedrock.packet.LevelEventPacket
 import org.cloudburstmc.protocol.bedrock.packet.SetTimePacket
 import org.cloudburstmc.protocol.bedrock.packet.BookEditPacket
 import org.cloudburstmc.protocol.bedrock.packet.CommandRequestPacket
+import org.cloudburstmc.protocol.bedrock.packet.MoveEntityAbsolutePacket
+import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket
 import org.cloudburstmc.protocol.common.SimpleDefinitionRegistry
 import java.util.Collections
 import java.util.UUID
@@ -56,6 +65,65 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
 
     
     val gameDataManager = GameDataManager()
+    val entityStorage = EntityStorage(this, 50f)
+    
+    init {
+        setupMobAlertCallback()
+        setupSelectedMobCallback()
+    }
+    
+    private fun setupMobAlertCallback() {
+        MobAlertManager.onMobDetected = { mobName ->
+            mainScope.launch {
+                try {
+                    OverlayManager.showOverlayWindow(TopCenterOverlayNotification())
+                    TopCenterOverlayNotification.addNotification(
+                        title = "Mob Alert!",
+                        subtitle = "$mobName detected nearby",
+                        iconRes = R.drawable.moon_stars_24,
+                        progressDuration = 3500
+                    )
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+    
+    private fun setupSelectedMobCallback() {
+        SelectedMobsManager.onSelectedMobDetected = { entityInfo ->
+            mainScope.launch {
+                try {
+                    val entityRadarModule = GameManager.elements.find { it is EntityRadarElement } as? EntityRadarElement
+                    
+                    val isAttacking = entityRadarModule?.isAttackingEntity(entityInfo.id) ?: false
+                    val isSpectating = entityRadarModule?.isSpectatingEntity(entityInfo.id) ?: false
+                    
+                    val dialog = SelectedMobDialogOverlay(
+                        entityInfo = entityInfo,
+                        playerPosition = localPlayer.vec3Position,
+                        onAttack = { entity ->
+                            entityRadarModule?.attackEntity(entity)
+                        },
+                        onFollow = { entity ->
+                            entityRadarModule?.followEntity(entity)
+                        },
+                        onSpectate = { entity ->
+                            entityRadarModule?.spectateEntity(entity)
+                        },
+                        onDismiss = {
+                            
+                        },
+                        isAttacking = isAttacking,
+                        isSpectating = isSpectating
+                    )
+                    OverlayManager.showOverlayWindow(dialog)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
 
     val protocolVersion: Int
         get() = luminaRelaySession.server.codec.protocolVersion
@@ -164,7 +232,6 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
             }
 
             is ItemComponentPacket -> {
-                
                 try {
                     val itemDefinitions = SimpleDefinitionRegistry.builder<ItemDefinition>()
                         .addAll(packet.items)
@@ -183,6 +250,25 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
                 gameDataManager.handlePlayerListPacket(packet)
             }
 
+            is PlayerAuthInputPacket -> {
+
+                if (localPlayer.tickExists % 20 == 0L) {
+                    entityStorage.updateEntities()
+                    Log.d("EntityStorage", "Updated entities: ${entityStorage.getEntities().size}")
+                }
+
+            }
+
+            is MoveEntityAbsolutePacket -> {
+
+                val entity = level.entityMap[packet.runtimeEntityId]
+                if (entity is EntityUnknown && entity.identifier in MobList.mobTypes) {
+                    entityStorage.onEntityMove(packet.runtimeEntityId, packet.position)
+                }
+
+
+            }
+
 
 
 
@@ -190,7 +276,7 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
         }
 
         localPlayer.onPacketBound(packet)
-        world.onPacket(packet)
+      //world.onPacket(packet)
         level.onPacketBound(packet)
 
         val event = EventPacketInbound(this, packet)
@@ -221,6 +307,10 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
         proxyPlayerNames.clear()
         GameManager.clearNetBound()
         gameDataManager.clearAllData()
+        entityStorage.clear()
+        MobAlertManager.resetDetections()
+        SelectedMobsManager.resetDetections()
+        SelectedMobsManager.resetOnDisconnect()
         startGameReceived = false
 
         for (module in GameManager.elements) {
@@ -463,4 +553,6 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
             TargetHudOverlay.showTargetHud(user, null, distance, maxdistance, hurtTime)
         }
     }
+
+    fun getStoredEntities(): Map<Long, EntityStorage.EntityInfo> = entityStorage.getEntities()
 }

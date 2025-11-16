@@ -19,11 +19,10 @@ import com.project.lumina.client.game.module.impl.misc.ArrayListElement
 import com.project.lumina.client.game.module.impl.misc.CrasherElement
 import com.project.lumina.client.game.module.impl.misc.DesyncElement
 import com.project.lumina.client.game.module.impl.combat.AutoTotemElement
+import com.project.lumina.client.game.module.impl.combat.AutoArmorElement
 
 import com.project.lumina.client.game.module.impl.world.NoClipElement
 import com.project.lumina.client.game.module.impl.misc.PositionLoggerElement
-import com.project.lumina.client.game.module.impl.world.AutoXPElement
-import com.project.lumina.client.game.module.impl.misc.SpamXPElement
 import com.project.lumina.client.game.module.impl.misc.CoordSnatcherElement
 import com.project.lumina.client.game.module.impl.misc.BlinderElement
 import com.project.lumina.client.game.module.impl.misc.DeathTrackerElement
@@ -34,6 +33,7 @@ import com.project.lumina.client.game.module.impl.motion.AirJumpElement
 import com.project.lumina.client.game.module.impl.motion.AntiAFKElement
 import com.project.lumina.client.game.module.impl.world.AutoWalkElement
 import com.project.lumina.client.game.module.impl.world.ChestStealerElement
+import com.project.lumina.client.game.module.impl.world.InvHelperElement
 import com.project.lumina.client.game.module.impl.motion.BhopElement
 import com.project.lumina.client.game.module.impl.combat.DamageBoostElement
 import com.project.lumina.client.game.module.impl.combat.HitboxElement
@@ -48,6 +48,7 @@ import com.project.lumina.client.game.module.impl.motion.LongJumpElement
 import com.project.lumina.client.game.module.impl.motion.MotionFlyElement
 import com.project.lumina.client.game.module.impl.combat.OpFightBotElement
 import com.project.lumina.client.game.module.api.commands.CmdListener
+import com.project.lumina.client.game.module.impl.EntityRadarElement
 import com.project.lumina.client.game.module.impl.combat.LockHeedElement
 import com.project.lumina.client.game.module.impl.misc.KeyStrokes
 import com.project.lumina.client.game.module.impl.misc.TargetHud
@@ -103,14 +104,13 @@ object GameManager {
             add(NoHurtCameraElement())
             add(AntiAFKElement())
             add(PositionLoggerElement())
-
-
             add(CoordSnatcherElement())
             add(BlinderElement())
             add(DeathTrackerElement())
             add(MotionFlyElement())
             add(FreeCameraElement())
             add(KillauraElement())
+            add(AutoArmorElement())
             add(GlideElement())
             add(StepElement())
             add(LongJumpElement())
@@ -134,6 +134,7 @@ object GameManager {
             add(ConfigManagerElement())
             add(AntiCrystalElement())
             add(ChestStealerElement())
+            add(InvHelperElement())
             add(AutoTotemElement())
             add(CrasherElement())
 
@@ -160,6 +161,7 @@ object GameManager {
                 add(NameTagElement())
                 add(AntiBlindElement())
                 add(ESPElement())
+                add(EntityRadarElement())
 
             }
         }

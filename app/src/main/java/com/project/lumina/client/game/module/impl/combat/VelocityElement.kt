@@ -55,7 +55,6 @@ class VelocityElement(iconResId: Int = AssetManager.getAsset("ic_file_download_b
 
     private val horizontalPercent by floatValue("Horizontal %", 80f, 0f..100f)
     private val verticalPercent by floatValue("Vertical %", 80f, 0f..100f)
-
     private val horizontalBlocks by floatValue("Horizontal Blocks", 0.2f, 0f..2f)
     private val verticalBlocks by floatValue("Vertical Blocks", 0.2f, 0f..2f)
 
