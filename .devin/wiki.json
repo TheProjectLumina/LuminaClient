@@ -1,0 +1,70 @@
+{
+  "repo_notes": [
+    {
+      "content": "LuminaClient is a Minecraft Bedrock Edition proxy/relay system that intercepts and manages network traffic between clients and servers. Built with Kotlin/Java and native C++ components. Core relay system in Lunaris/src/main/java/com/project/lumina/relay/ with LuminaRelay (orchestrator) and LuminaRelaySession (packet flow manager). Uses Netty with CloudburstMC RakNet for network communication.",
+      "author": "Project Lumina Team"
+    },
+    {
+      "content": "Main Android app in app/src/main/java/com/project/lumina/client/ with router/ for screens, ui/component/ for UI components, remlink/ for Realms authentication, and util/ for utilities. Uses Jetpack Compose Material3 for UI. Supports multiple Bedrock protocol versions (v786, v818) via codec selection and AutoCodecPacketListener.",
+      "author": "Project Lumina Team"
+    },
+    {
+      "content": "Key folders: Lunaris/ (relay system and native integration), Network/ (RakNet transport), Protocol/ (Bedrock protocol implementation), app/ (Android UI and client logic), Pixie/ (ImGui native rendering), SSC/ (utilities). Licensed under GPL-3.0-or-later with third-party components from CloudburstMC (Apache 2.0), MuCute Client, and ProtoHax.",
+      "author": "Project Lumina Team"
+    },
+    {
+      "content": "Game systems in app/src/main/java/com/project/lumina/client/game/: module/ contains gameplay enhancement modules organized by category (combat, motion, visual, world, misc, effect, game) with API for commands/config/settings. world/ handles chunk data with 16 ChunkSections per chunk, BlockStorage, and palette compression. registry/ manages BlockMapping and ItemMapping for runtime ID to definition conversion, loading from mcpedata/ assets (NBT for blocks, JSON for items).",
+      "author": "Project Lumina Team"
+    }
+  ],
+  "pages": [
+    {
+      "title": "System Architecture",
+      "purpose": "High-level overview of LuminaClient proxy/relay architecture, core components (LuminaRelay, LuminaRelaySession), packet processing pipeline, and native integration with JNI"
+    },
+    {
+      "title": "Relay System",
+      "purpose": "Documentation of Lunaris/ folder covering LuminaRelay orchestrator, session management, server bootstrap, client connections, and bidirectional packet forwarding with listener hooks"
+    },
+    {
+      "title": "Network Layer",
+      "purpose": "Network/ folder documentation including RakNet UDP transport, Netty event loop groups, rate limiting removal, server advertisement broadcasting, and configurable local/remote addresses"
+    },
+    {
+      "title": "Protocol Support",
+      "purpose": "Protocol/ folder covering Minecraft Bedrock protocol implementation, codec selection (Bedrock_v818.CODEC), multi-version support (v786, v818), and dynamic protocol negotiation via AutoCodecPacketListener"
+    },
+    {
+      "title": "Packet Processing",
+      "purpose": "Packet handling pipeline with listener-based architecture, before/after hooks, packet queueing for delayed connections, error isolation with runCatching, and SessionCloseHandler for graceful disconnects"
+    },
+    {
+      "title": "Android Client",
+      "purpose": "app/ folder documentation covering Jetpack Compose UI, Material3 components, screen navigation (router/), Realms authentication (remlink/), and utilities (util/)"
+    },
+    {
+      "title": "Realms Integration",
+      "purpose": "Microsoft/Xbox Live authentication system, MinecraftAuth library integration, Realms connection handling, RakNet vs Nethernet protocol detection, and session management"
+    },
+    {
+      "title": "Native Components",
+      "purpose": "JNI integration for performance-critical operations, native C++ code interfacing, Pixie/ ImGui rendering, and Android Native Surface implementation"
+    },
+    {
+      "title": "Development Setup",
+      "purpose": "Environment setup, Android Studio configuration, Firebase google-services.json setup, Gradle sync, build process, and testing on Bedrock servers"
+    },
+    {
+      "title": "Game Modules System",
+      "purpose": "Documentation of app/src/main/java/com/project/lumina/client/game/module/ covering module categories (combat/, motion/, visual/, world/, misc/, effect/, game/), module API (commands/, config/, setting/), and how modules enhance gameplay with features like Killaura, Velocity, Reach, AutoArmor, Flight, ESP, and more"
+    },
+    {
+      "title": "Chunk Data System",
+      "purpose": "Documentation of app/src/main/java/com/project/lumina/client/game/world/ covering Chunk structure (x, z, dimension coordinates), ChunkSection array (16 sections for 384-block height), BlockStorage for block data, palette system for compression, read/write operations, and getBlock/setBlock methods for world manipulation"
+    },
+    {
+      "title": "Mapping System",
+      "purpose": "Documentation of app/src/main/java/com/project/lumina/client/game/registry/ covering BlockMapping (runtime_block_states NBT loading, runtimeId to BlockDefinition conversion, identifier lookup), ItemMapping (runtime_item_states JSON loading, item definitions), LegacyBlockMapping for older versions, and MappingProvider pattern for version-specific data loading from mcpedata/ assets"
+    }
+  ]
+}
