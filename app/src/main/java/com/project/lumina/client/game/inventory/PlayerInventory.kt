@@ -55,13 +55,13 @@ class PlayerInventory(private val player: LocalPlayer) : EntityInventory(player)
             }
 
             is InventoryTransactionPacket -> {
-  //              android.util.Log.d("PlayerInventory", "Received InventoryTransactionPacket: type=${packet.transactionType}, entityId=${packet.runtimeEntityId}")
+  
                 if (packet.transactionType == InventoryTransactionType.NORMAL && packet.runtimeEntityId == player.runtimeEntityId) {
                     packet.actions.filter { it is InventoryActionData && it.source.type == InventorySource.Type.CONTAINER }
                         .forEach {
                             val containerId =
                                 getOffsetByContainerId(it.source.containerId) ?: return@forEach
-     //                       android.util.Log.d("PlayerInventory", "Player inventory transaction: container ${it.source.containerId} slot ${it.slot + containerId} ${it.fromItem.definition?.identifier ?: "AIR"} -> ${it.toItem.definition?.identifier ?: "AIR"}")
+     
                             content[it.slot + containerId] = it.toItem
                         }
                 }
@@ -69,13 +69,13 @@ class PlayerInventory(private val player: LocalPlayer) : EntityInventory(player)
 
             is InventorySlotPacket -> {
                 val offset = getOffsetByContainerId(packet.containerId) ?: return
-       //         android.util.Log.d("PlayerInventory", "Player inventory slot update: container ${packet.containerId} slot ${packet.slot + offset} -> ${packet.item.definition?.identifier ?: "AIR"} x${packet.item.count}")
+       
                 content[packet.slot + offset] = packet.item
             }
 
             is InventoryContentPacket -> {
                 val offset = getOffsetByContainerId(packet.containerId) ?: return
-        //        android.util.Log.d("PlayerInventory", "Player inventory content update: container ${packet.containerId} with ${packet.contents.size} items")
+        
                 fillContent(packet.contents, offset)
             }
 
@@ -116,11 +116,11 @@ class PlayerInventory(private val player: LocalPlayer) : EntityInventory(player)
      */
     fun itemStackRequest(request: ItemStackRequest, session: NetBound) {
         assert(player.inventoriesServerAuthoritative) { "inventory action is not server authoritative" }
-   //     android.util.Log.d("PlayerInventory", "itemStackRequest called with requestId: ${request.requestId}")
+   
         val packet = ItemStackRequestPacket().apply {
             requests.add(request)
         }
-  //      android.util.Log.d("PlayerInventory", "Sending ItemStackRequestPacket directly")
+  
         session.serverBound(packet)
     }
 

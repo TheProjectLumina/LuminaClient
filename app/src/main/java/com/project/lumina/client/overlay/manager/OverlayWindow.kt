@@ -21,8 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class OverlayWindow {
 
-    var minimapZoom: Float = 1.0f
-    var minimapDotSize: Int = 5
+
 
     open val layoutParams by lazy {
         LayoutParams().apply {

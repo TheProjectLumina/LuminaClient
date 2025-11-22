@@ -1,41 +1,8 @@
 /*
  * © Project Lumina 2025 — Licensed under GNU GPLv3
- * You are free to use, modify, and redistribute this code under the terms
- * of the GNU General Public License v3. See the LICENSE file for details.
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * This is open source — not open credit.
- *
- * If you're here to build, welcome. If you're here to repaint and reupload
- * with your tag slapped on it… you're not fooling anyone.
- *
- * Changing colors and class names doesn't make you a developer.
- * Copy-pasting isn't contribution.
- *
- * You have legal permission to fork. But ask yourself — are you improving,
- * or are you just recycling someone else's work to feed your ego?
- *
- * Open source isn't about low-effort clones or chasing clout.
- * It's about making things better. Sharper. Cleaner. Smarter.
- *
- * So go ahead, fork it — but bring something new to the table,
- * or don’t bother pretending.
- *
- * This message is philosophical. It does not override your legal rights under GPLv3.
- * ─────────────────────────────────────────────────────────────────────────────
- *
- * GPLv3 Summary:
- * - You have the freedom to run, study, share, and modify this software.
- * - If you distribute modified versions, you must also share the source code.
- * - You must keep this license and copyright intact.
- * - You cannot apply further restrictions — the freedom stays with everyone.
- * - This license is irrevocable, and applies to all future redistributions.
- *
- * Full text: https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 package com.project.lumina.client.overlay.mods
-
 
 import android.view.Gravity
 import android.view.WindowManager
@@ -43,26 +10,30 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.project.lumina.client.overlay.manager.OverlayManager
 import com.project.lumina.client.overlay.manager.OverlayWindow
 import com.project.lumina.client.ui.theme.*
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlinx.coroutines.delay
+import kotlin.math.*
 
 data class Position(val x: Float, val y: Float)
+
+data class MinimapEntity(
+    val id: Long,
+    val position: Position,
+    val name: String,
+    val imagePath: String?,
+    val isPlayer: Boolean = false,
+    val lastUpdate: Long = System.currentTimeMillis()
+)
 
 class MiniMapOverlay : OverlayWindow() {
     private val _layoutParams by lazy {
@@ -83,12 +54,20 @@ class MiniMapOverlay : OverlayWindow() {
     override val layoutParams: WindowManager.LayoutParams
         get() = _layoutParams
 
+    // State
     private var centerPosition by mutableStateOf(Position(0f, 0f))
     private var playerRotation by mutableStateOf(0f)
-    private var targets by mutableStateOf(listOf<Position>())
-    private var minimapSize by mutableStateOf(100f)
     private var targetRotation by mutableStateOf(0f)
-    private var rotationSmoothStep = 0.15f
+    private var entities by mutableStateOf<Map<Long, MinimapEntity>>(emptyMap())
+
+    // Settings
+    var minimapSize by mutableStateOf(100f)
+    var minimapZoom by mutableStateOf(1.0f)
+    var minimapDotSize by mutableStateOf(5)
+
+    private val rotationSmoothStep = 0.15f
+    private val entityTimeout = 5000L
+    private val maxEntities = 100
 
     companion object {
         val overlayInstance by lazy { MiniMapOverlay() }
@@ -98,19 +77,28 @@ class MiniMapOverlay : OverlayWindow() {
             if (shouldShowOverlay) {
                 try {
                     OverlayManager.showOverlayWindow(overlayInstance)
-                } catch (e: Exception) {}
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
 
         fun dismissOverlay() {
             try {
                 OverlayManager.dismissOverlayWindow(overlayInstance)
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         fun setOverlayEnabled(enabled: Boolean) {
             shouldShowOverlay = enabled
-            if (enabled) showOverlay() else dismissOverlay()
+            if (enabled) {
+                showOverlay()
+            } else {
+                dismissOverlay()
+                overlayInstance.clearAll()
+            }
         }
 
         fun isOverlayEnabled(): Boolean = shouldShowOverlay
@@ -123,41 +111,117 @@ class MiniMapOverlay : OverlayWindow() {
             overlayInstance.targetRotation = rotation
         }
 
-        fun setTargets(targetList: List<Position>) {
-            overlayInstance.targets = targetList
+        fun updateEntity(id: Long, x: Float, y: Float, name: String, imagePath: String?, isPlayer: Boolean = false) {
+            overlayInstance.updateEntityInternal(id, x, y, name, imagePath, isPlayer)
+        }
+
+        fun removeEntity(id: Long) {
+            overlayInstance.removeEntityInternal(id)
         }
 
         fun setMinimapSize(size: Float) {
             overlayInstance.minimapSize = size
         }
+
+        fun clearAllEntities() {
+            overlayInstance.clearAll()
+        }
+    }
+
+    private fun updateEntityInternal(id: Long, x: Float, y: Float, name: String, imagePath: String?, isPlayer: Boolean) {
+        val currentEntities = entities.toMutableMap()
+
+
+        if (currentEntities.size >= maxEntities && !currentEntities.containsKey(id)) {
+            val oldestId = currentEntities.minByOrNull { it.value.lastUpdate }?.key
+            if (oldestId != null) {
+                currentEntities.remove(oldestId)
+            }
+        }
+
+        currentEntities[id] = MinimapEntity(
+            id = id,
+            position = Position(x, y),
+            name = name,
+            imagePath = imagePath,
+            isPlayer = isPlayer,
+            lastUpdate = System.currentTimeMillis()
+        )
+
+        entities = currentEntities
+    }
+
+    private fun removeEntityInternal(id: Long) {
+        val currentEntities = entities.toMutableMap()
+        currentEntities.remove(id)
+        entities = currentEntities
+    }
+
+    private fun cleanupStaleEntities() {
+        val now = System.currentTimeMillis()
+        val currentEntities = entities.toMutableMap()
+        val staleIds = currentEntities.filter { (_, entity) ->
+            now - entity.lastUpdate > entityTimeout
+        }.keys
+
+        staleIds.forEach { currentEntities.remove(it) }
+
+        if (staleIds.isNotEmpty()) {
+            entities = currentEntities
+        }
+    }
+
+    private fun clearAll() {
+        entities = emptyMap()
+        centerPosition = Position(0f, 0f)
+        playerRotation = 0f
+        targetRotation = 0f
     }
 
     @Composable
     override fun Content() {
         if (!isOverlayEnabled()) return
 
-        LaunchedEffect(targetRotation) {
-            while (kotlin.math.abs(playerRotation - targetRotation) > 0.001f) {
 
+        LaunchedEffect(targetRotation) {
+            while (abs(playerRotation - targetRotation) > 0.001f) {
                 var delta = (targetRotation - playerRotation) % (2 * Math.PI).toFloat()
                 if (delta > Math.PI) delta -= (2 * Math.PI).toFloat()
                 if (delta < -Math.PI) delta += (2 * Math.PI).toFloat()
 
                 playerRotation += delta * rotationSmoothStep
-                kotlinx.coroutines.delay(16L)
+                delay(16L)
             }
         }
 
 
-        Minimap(centerPosition, playerRotation, targets, minimapSize)
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(2000L)
+                cleanupStaleEntities()
+            }
+        }
+
+        Minimap(centerPosition, playerRotation, entities.values.toList(), minimapSize)
     }
 
     @Composable
-    private fun Minimap(center: Position, rotation: Float, targets: List<Position>, size: Float) {
+    private fun Minimap(
+        center: Position,
+        rotation: Float,
+        entityList: List<MinimapEntity>,
+        size: Float
+    ) {
         val dpSize = size.dp
         val rawRadius = size / 2
         val radius = rawRadius * minimapZoom
         val scale = 2f * minimapZoom
+
+
+        val context = LocalContext.current
+
+
+        val imageCache = remember { mutableMapOf<String, android.graphics.Bitmap?>() }
 
         Box(
             modifier = Modifier
@@ -187,12 +251,10 @@ class MiniMapOverlay : OverlayWindow() {
                 drawCircle(MPlayerMarker, radius = playerDotRadius, center = Offset(centerX, centerY))
 
 
-
                 val northAngle = -rotation
                 val northDistance = rawRadius * 0.95f
                 val northX = centerX + northDistance * sin(northAngle)
                 val northY = centerY - northDistance * cos(northAngle)
-
 
                 val paint = android.graphics.Paint().apply {
                     color = android.graphics.Color.BLUE
@@ -202,32 +264,88 @@ class MiniMapOverlay : OverlayWindow() {
                     isAntiAlias = true
                 }
 
-
                 drawContext.canvas.nativeCanvas.drawText("^", northX, northY - paint.textSize * 0.6f, paint)
                 drawContext.canvas.nativeCanvas.drawText("N", northX, northY + paint.textSize * 0.4f, paint)
 
 
-
-
-                targets.forEach { target ->
-                    val relX = target.x - center.x
-                    val relY = target.y - center.y
+                entityList.forEach { entity ->
+                    val relX = entity.position.x - center.x
+                    val relY = entity.position.y - center.y
                     val distance = sqrt(relX * relX + relY * relY) * scale
-
-
-                    val dotRadius = minimapDotSize * minimapZoom
 
                     val angle = atan2(relY, relX) - rotation
                     val clampedDistance = if (distance < radius * 0.9f) distance else radius * 0.85f
                     val entityX = centerX + clampedDistance * sin(angle)
                     val entityY = centerY - clampedDistance * cos(angle)
 
-                    drawCircle(
-                        color = if (distance < radius * 0.9f) MEntityClose else MEntityFar,
-                        radius = dotRadius,
-                        center = Offset(entityX, entityY)
-                    )
+                    if (entity.isPlayer) {
+
+                        val dotRadius = minimapDotSize * minimapZoom * 1.2f
+                        drawCircle(
+                            color = if (distance < radius * 0.9f) MEntityClose else MEntityFar,
+                            radius = dotRadius,
+                            center = Offset(entityX, entityY)
+                        )
+
+                        drawCircle(
+                            color = androidx.compose.ui.graphics.Color.White,
+                            radius = dotRadius * 0.4f,
+                            center = Offset(entityX, entityY)
+                        )
+                    } else {
+
+                        val dotRadius = minimapDotSize * minimapZoom * 1.5f
+
+
+                        drawCircle(
+                            color = if (distance < radius * 0.9f) MEntityClose else MEntityFar,
+                            radius = dotRadius,
+                            center = Offset(entityX, entityY)
+                        )
+
+
+                        if (entity.imagePath != null) {
+                            try {
+                                val bitmap = imageCache.getOrPut(entity.imagePath) {
+                                    try {
+                                        val cleanPath = entity.imagePath.removePrefix("/")
+                                        val inputStream = context.assets.open(cleanPath)
+                                        val bmp = android.graphics.BitmapFactory.decodeStream(inputStream)
+                                        inputStream.close()
+                                        bmp
+                                    } catch (e: Exception) {
+                                        null
+                                    }
+                                }
+
+                                if (bitmap != null) {
+                                    val imageSize = dotRadius * 1.6f
+                                    val left = entityX - imageSize / 2
+                                    val top = entityY - imageSize / 2
+                                    val right = entityX + imageSize / 2
+                                    val bottom = entityY + imageSize / 2
+
+                                    val destRect = android.graphics.RectF(left, top, right, bottom)
+                                    val bitmapPaint = android.graphics.Paint().apply {
+                                        isAntiAlias = true
+                                        isFilterBitmap = true
+                                    }
+                                    drawContext.canvas.nativeCanvas.drawBitmap(bitmap, null, destRect, bitmapPaint)
+                                }
+                            } catch (e: Exception) {
+                                // Image failed, the circle is already drawn
+                            }
+                        }
+                    }
                 }
+            }
+        }
+
+
+        DisposableEffect(Unit) {
+            onDispose {
+                imageCache.values.forEach { it?.recycle() }
+                imageCache.clear()
             }
         }
     }

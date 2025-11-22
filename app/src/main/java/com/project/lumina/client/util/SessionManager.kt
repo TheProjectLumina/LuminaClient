@@ -3,10 +3,12 @@ package com.project.lumina.client.util
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Base64
-import com.project.lumina.client.activity.LVAuthWebViewActivity
+import androidx.browser.customtabs.CustomTabsIntent
 import java.io.File
 import java.net.URLEncoder
+import java.security.MessageDigest
 import kotlin.random.Random
 
 class SessionManager(private val context: Context) {
@@ -16,7 +18,8 @@ class SessionManager(private val context: Context) {
         private const val SESSION_DURATION_HOURS = 4
         private const val SESSION_DURATION_MS = SESSION_DURATION_HOURS * 60 * 60 * 1000L
         private const val LINKVERTISE_USER_ID = "1444843"
-        private const val TARGET_AUTH_URI = "https://projectlumina.online/?game=auth"
+        private const val YOUR_DOMAIN = API.LVAUTH
+        private const val SECRET_SALT = "pFzBVr9YzofdxjDrJO1xdW=qeEF2VVIq"
     }
 
     fun checkSession(activity: Activity): Boolean {
@@ -28,23 +31,41 @@ class SessionManager(private val context: Context) {
         return false
     }
 
+    fun validateAndSaveSession(key: String, req: String): Boolean {
+        val expectedKey = generateKey(req)
+
+        if (key == expectedKey) {
+            saveSession()
+            return true
+        }
+
+        return false
+    }
+
+    private fun generateKey(req: String): String {
+        val input = "$req$SECRET_SALT"
+        val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
+        return Base64.encodeToString(bytes, Base64.NO_WRAP or Base64.URL_SAFE)
+            .substring(0, 32) // Take first 32 characters
+    }
+
+    private fun generateRandomReq(): String {
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        return (1..16)
+            .map { chars.random() }
+            .joinToString("")
+    }
 
     private fun generateLinkvertiseUrl(userId: String, targetLink: String): String {
         val randomNumber = Random.nextInt(0, 1000)
         val baseUrl = "https://link-to.net/$userId/$randomNumber/dynamic"
-
-        val encodedLink = URLEncoder.encode(targetLink, "UTF-8")
-            .replace("%3A", ":")
-            .replace("%2F", "/")
-
         val base64Encoded = Base64.encodeToString(
-            encodedLink.toByteArray(),
+            targetLink.toByteArray(),
             Base64.NO_WRAP
         )
 
         return "$baseUrl?r=$base64Encoded"
     }
-
 
     private fun hasValidSession(): Boolean {
         val sessionFile = File(context.filesDir, SESSION_FILE)
@@ -67,7 +88,6 @@ class SessionManager(private val context: Context) {
         }
     }
 
-
     fun saveSession() {
         val sessionFile = File(context.filesDir, SESSION_FILE)
         val timestamp = System.currentTimeMillis().toString()
@@ -80,29 +100,56 @@ class SessionManager(private val context: Context) {
         sessionFile.writeText(encodedData)
     }
 
-
     private fun startAuthFlow(activity: Activity) {
+        // Generate random request code
+        val reqCode = generateRandomReq()
+
+        // Store req code for later validation
+        storeReqCode(reqCode)
+
+        // Create your domain URL with req parameter
+        val yourDomainUrl = "$YOUR_DOMAIN?req=$reqCode"
+
+        // Generate Linkvertise URL pointing to your domain
         val linkvertiseUrl = generateLinkvertiseUrl(
             userId = LINKVERTISE_USER_ID,
-            targetLink = TARGET_AUTH_URI
+            targetLink = yourDomainUrl
         )
 
-        val intent = Intent(activity, LVAuthWebViewActivity::class.java).apply {
-            putExtra(LVAuthWebViewActivity.EXTRA_AUTH_URL, linkvertiseUrl)
-        }
+        // Launch Custom Tab
+        val customTabsIntent = CustomTabsIntent.Builder()
+            .setShowTitle(true)
+            .build()
 
-        activity.startActivity(intent)
+        customTabsIntent.launchUrl(activity, Uri.parse(linkvertiseUrl))
         activity.finish()
     }
 
+    private fun storeReqCode(reqCode: String) {
+        val reqFile = File(context.filesDir, "req_code")
+        reqFile.writeText(reqCode)
+    }
+
+    fun getStoredReqCode(): String? {
+        val reqFile = File(context.filesDir, "req_code")
+        return if (reqFile.exists()) {
+            reqFile.readText()
+        } else {
+            null
+        }
+    }
 
     fun clearSession() {
         val sessionFile = File(context.filesDir, SESSION_FILE)
         if (sessionFile.exists()) {
             sessionFile.delete()
         }
-    }
 
+        val reqFile = File(context.filesDir, "req_code")
+        if (reqFile.exists()) {
+            reqFile.delete()
+        }
+    }
 
     fun getRemainingSessionTime(): Long {
         val sessionFile = File(context.filesDir, SESSION_FILE)

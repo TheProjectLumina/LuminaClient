@@ -1,14 +1,6 @@
 package com.project.lumina.relay.util
 
-import coelho.msftauth.api.xbox.XboxDevice
-import coelho.msftauth.api.xbox.XboxDeviceAuthRequest
-import coelho.msftauth.api.xbox.XboxDeviceKey
-import coelho.msftauth.api.xbox.XboxSISUAuthenticateRequest
-import coelho.msftauth.api.xbox.XboxSISUAuthorizeRequest
-import coelho.msftauth.api.xbox.XboxTitleAuthRequest
-import coelho.msftauth.api.xbox.XboxToken
-import coelho.msftauth.api.xbox.XboxUserAuthRequest
-import coelho.msftauth.api.xbox.XboxXSTSAuthRequest
+import coelho.msftauth.api.xbox.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
@@ -32,38 +24,81 @@ val gson: Gson = GsonBuilder()
     .setPrettyPrinting()
     .create()
 
+/**
+ * Fetch authentication chain compatible with newer protocol versions
+ * This creates a proper certificate chain following Mojang's auth spec
+ */
 fun fetchChain(identityToken: String, keyPair: KeyPair): List<String> {
     val rawChain = JsonParser.parseReader(fetchRawChain(identityToken, keyPair.public)).asJsonObject
     val chains = rawChain.get("chain").asJsonArray
 
-    
-    val identityPubKey = JsonParser.parseString(base64Decode(chains.get(0).asString.split(".")[0]).toString(Charsets.UTF_8)).asJsonObject
+    // Extract the identity public key from the first chain element
+    val firstChainHeader = chains.get(0).asString.split(".")[0]
+    val identityPubKey = JsonParser.parseString(
+        base64Decode(firstChainHeader).toString(Charsets.UTF_8)
+    ).asJsonObject
 
-    val jwt = signJWT(gson.toJson(JsonObject().apply {
+    // Create the certificate authority JWT
+    val timestamp = Instant.now().epochSecond
+    val caPayload = JsonObject().apply {
         addProperty("certificateAuthority", true)
-        addProperty("exp", (Instant.now().epochSecond + TimeUnit.HOURS.toSeconds(6)).toInt())
-        addProperty("nbf", (Instant.now().epochSecond - TimeUnit.HOURS.toSeconds(6)).toInt())
+        addProperty("exp", (timestamp + TimeUnit.HOURS.toSeconds(6)).toInt())
+        addProperty("nbf", (timestamp - TimeUnit.HOURS.toSeconds(6)).toInt())
+        addProperty("iat", timestamp.toInt())
         addProperty("identityPublicKey", identityPubKey.get("x5u").asString)
-    }), keyPair)
+    }
 
-    val list = mutableListOf(jwt)
+    val caJwt = signJWT(gson.toJson(caPayload), keyPair)
+
+    // Return the complete chain with CA certificate first
+    val list = mutableListOf(caJwt)
     list.addAll(chains.map { it.asString })
     return list
 }
 
+/**
+ * Forge authentication data for proxy with proper timestamps and claims
+ * This is used when creating a new login packet
+ */
+fun forgeAuthData(keyPair: KeyPair, extraData: JsonObject): String {
+    val publicKeyBase64 = Base64.getEncoder().withoutPadding().encodeToString(keyPair.public.encoded)
+    val timestamp = Instant.now().epochSecond
+
+    val payload = JsonObject().apply {
+        addProperty("nbf", (timestamp - TimeUnit.SECONDS.toSeconds(1)).toInt())
+        addProperty("exp", (timestamp + TimeUnit.DAYS.toSeconds(1)).toInt())
+        addProperty("iat", timestamp.toInt())
+        addProperty("iss", "self")
+        addProperty("certificateAuthority", true)
+        addProperty("identityPublicKey", publicKeyBase64)
+
+        // Add the extra data (XUID, displayName, etc.)
+        add("extraData", extraData)
+    }
+
+    return signJWT(gson.toJson(payload), keyPair)
+}
+
+/**
+ * Forge skin data JWT
+ */
+fun forgeSkinData(keyPair: KeyPair, skinData: JsonObject): String {
+    return signJWT(gson.toJson(skinData), keyPair)
+}
+
 fun fetchRawChain(identityToken: String, publicKey: PublicKey): Reader {
-    
     val data = JsonObject().apply {
         addProperty("identityPublicKey", Base64.getEncoder().withoutPadding().encodeToString(publicKey.encoded))
     }
+
     val request = Request.Builder()
         .url("https://multiplayer.minecraft.net/authentication")
         .post(gson.toJson(data).toRequestBody("application/json".toMediaType()))
-        .header("Client-Version", "1.21.60")
+        .header("Client-Version", "1.21.124")
         .header("Authorization", identityToken)
         .build()
-    val response = HttpUtils.client.newCall(request).execute()
 
+    val response = HttpUtils.client.newCall(request).execute()
     assert(response.code == 200) { "Http code ${response.code}" }
 
     return response.body!!.charStream()
@@ -77,10 +112,12 @@ fun fetchIdentityToken(accessToken: String, deviceInfo: XboxDeviceInfo): XboxIde
             "user.auth.xboxlive.com", "t=$accessToken"
         ).request(HttpUtils.client)
     }
+
     val deviceToken = XboxDeviceAuthRequest(
         "http://auth.xboxlive.com", "JWT", deviceInfo.deviceType,
         "0.0.0.0", deviceKey
     ).request(HttpUtils.client)
+
     val titleToken = if (deviceInfo.allowDirectTitleTokenFetch) {
         XboxTitleAuthRequest(
             "http://auth.xboxlive.com", "JWT", "RPS",
@@ -93,13 +130,16 @@ fun fetchIdentityToken(accessToken: String, deviceInfo: XboxDeviceInfo): XboxIde
             deviceInfo.appId, device, "service::user.auth.xboxlive.com::MBI_SSL",
             sisuQuery, deviceInfo.xalRedirect, "RETAIL"
         ).request(HttpUtils.client)
+
         val sisuToken = XboxSISUAuthorizeRequest(
             "t=$accessToken", deviceInfo.appId, device, "RETAIL",
             sisuRequest.sessionId, "user.auth.xboxlive.com", "http://xboxlive.com"
         ).request(HttpUtils.client)
+
         if (sisuToken.status != 200) {
             val did = deviceToken.displayClaims["xdi"]!!.asJsonObject.get("did").asString
-            val sign = deviceKey.sign("/proxy?sessionid=${sisuRequest.sessionId}", null, "POST", null).replace("+", "%2B").replace("=", "%3D")
+            val sign = deviceKey.sign("/proxy?sessionid=${sisuRequest.sessionId}", null, "POST", null)
+                .replace("+", "%2B").replace("=", "%3D")
             val url = sisuToken.webPage.split("#")[0] +
                     "&did=0x$did&redirect=${deviceInfo.xalRedirect}" +
                     "&sid=${sisuRequest.sessionId}&sig=${sign}&state=${sisuQuery.state}"
@@ -107,9 +147,11 @@ fun fetchIdentityToken(accessToken: String, deviceInfo: XboxDeviceInfo): XboxIde
         }
         sisuToken.titleToken
     }
+
     if (userRequestThread.isAlive)
         userRequestThread.join()
     if (userToken == null) error("failed to fetch xbox user token")
+
     val xstsToken = XboxXSTSAuthRequest(
         "https://multiplayer.minecraft.net/",
         "JWT",
@@ -122,34 +164,25 @@ fun fetchIdentityToken(accessToken: String, deviceInfo: XboxDeviceInfo): XboxIde
     return XboxIdentityToken(xstsToken.toIdentityToken(), Instant.parse(xstsToken.notAfter).epochSecond)
 }
 
-/**
- * thown whilst no xbox gamer tag found on account
- */
-@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
 class XboxGamerTagException(val sisuStartUrl: String)
     : IllegalStateException("Have you registered a Xbox GamerTag? You can register it here: $sisuStartUrl")
 
 data class XboxIdentityToken(val token: String, val notAfter: Long) {
-
     val expired: Boolean
         get() = notAfter < Instant.now().epochSecond
-
 }
 
-@Suppress("MemberVisibilityCanBePrivate")
-data class XboxDeviceInfo(val appId: String, val deviceType: String,
-                          val allowDirectTitleTokenFetch: Boolean = false,
-                          val xalRedirect: String = "") {
-
-    /**
-     * @param token refresh token or authorization code
-     * @return Pair<AccessToken, RefreshToken>
-     */
+data class XboxDeviceInfo(
+    val appId: String,
+    val deviceType: String,
+    val allowDirectTitleTokenFetch: Boolean = false,
+    val xalRedirect: String = ""
+) {
     fun refreshToken(token: String): Pair<String, String> {
         val form = FormBody.Builder()
         form.add("client_id", appId)
         form.add("redirect_uri", "https://login.live.com/oauth20_desktop.srf")
-        
+
         if (token.split("\n")[0].substring(token.lastIndexOf('.')+1).length == 36) {
             form.add("grant_type", "authorization_code")
             form.add("code", token)
@@ -158,13 +191,14 @@ data class XboxDeviceInfo(val appId: String, val deviceType: String,
             form.add("grant_type", "refresh_token")
             form.add("refresh_token", token)
         }
+
         val request = Request.Builder()
             .url("https://login.live.com/oauth20_token.srf")
             .header("Content-Type", "application/x-www-form-urlencoded")
             .post(form.build())
             .build()
-        val response = HttpUtils.client.newCall(request).execute()
 
+        val response = HttpUtils.client.newCall(request).execute()
         assert(response.code == 200) { "Http code ${response.code}" }
 
         val body = JsonParser.parseReader(response.body!!.charStream()).asJsonObject
@@ -179,7 +213,6 @@ data class XboxDeviceInfo(val appId: String, val deviceType: String,
     }
 
     companion object {
-
         val DEVICE_ANDROID = XboxDeviceInfo("0000000048183522", "Android", false, xalRedirect = "ms-xal-0000000048183522://auth")
         val DEVICE_IOS = XboxDeviceInfo("000000004c17c01a", "iOS", false, xalRedirect = "ms-xal-000000004c17c01a://auth")
         val DEVICE_NINTENDO = XboxDeviceInfo("00000000441cc96b", "Nintendo", true)
@@ -188,19 +221,11 @@ data class XboxDeviceInfo(val appId: String, val deviceType: String,
 }
 
 interface IXboxIdentityTokenCache {
-
-    /**
-     * identifier for the account which used to cache
-     */
     val identifier: String
-
     fun cache(device: XboxDeviceInfo, token: XboxIdentityToken)
-
     fun checkCache(device: XboxDeviceInfo): XboxIdentityToken?
-
 }
 
-@Suppress("MemberVisibilityCanBePrivate")
 class XboxIdentityTokenCacheFileSystem(val cacheFile: File, override val identifier: String) : IXboxIdentityTokenCache {
 
     override fun cache(device: XboxDeviceInfo, token: XboxIdentityToken) {
@@ -263,7 +288,6 @@ class XboxIdentityTokenCacheFileSystem(val cacheFile: File, override val identif
             }
 
             if (deviceJson.get("expires").asLong < Instant.now().epochSecond || !deviceJson.has("token")) {
-                
                 identifierJson.remove(device.deviceType)
                 removeExpired(json)
                 cacheFile.writeText(gson.toJson(json), Charsets.UTF_8)

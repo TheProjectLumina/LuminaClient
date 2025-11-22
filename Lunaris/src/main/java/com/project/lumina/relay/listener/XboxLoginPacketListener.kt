@@ -1,12 +1,7 @@
 package com.project.lumina.relay.listener
 
-import com.project.lumina.relay.util.IXboxIdentityTokenCache
-import com.project.lumina.relay.util.XboxDeviceInfo
-import com.project.lumina.relay.util.XboxIdentityToken
-import com.project.lumina.relay.util.fetchChain
-import com.project.lumina.relay.util.fetchIdentityToken
-import com.project.lumina.relay.util.signJWT
-import net.kyori.adventure.text.Component
+import com.google.gson.JsonObject
+import com.project.lumina.relay.util.*
 import org.cloudburstmc.protocol.bedrock.data.auth.AuthType
 import org.cloudburstmc.protocol.bedrock.data.auth.CertificateChainPayload
 import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket
@@ -52,26 +47,48 @@ class XboxLoginPacketListener(
 
                 val clientJwtPayload = packet.clientJwt?.split('.')?.getOrNull(1)
                     ?: throw IllegalStateException("Invalid clientJwt format")
-                packet.clientJwt = signJWT(clientJwtPayload, keyPair, base64Encoded = true)
+
+                val skinData = jwtPayload(packet.clientJwt!!)
+                    ?: throw IllegalStateException("Failed to parse skin data")
+
+                packet.clientJwt = forgeSkinData(keyPair, skinData)
+
+                println("Login success - Chain built with ${chain.size} certificates")
             } catch (e: Throwable) {
-                // Use reflection to set private field since no setter exists
                 val disconnectPacket = DisconnectPacket()
-                val field = disconnectPacket.javaClass.getDeclaredField("kickMessage")
-                field.isAccessible = true
-                field.set(disconnectPacket, "Login failed: ${e.message ?: e.toString()}")
+                try {
+                    val field = disconnectPacket.javaClass.getDeclaredField("kickMessage")
+                    field.isAccessible = true
+                    field.set(disconnectPacket, "Login failed: ${e.message ?: e.toString()}")
+                } catch (reflectionError: Exception) {
+                    println("Failed to set disconnect message: $reflectionError")
+                }
+
                 luminaRelaySession.clientBound(disconnectPacket)
-
-
-
                 println("Login failed: $e")
+                e.printStackTrace()
                 return false
             }
 
-            println("Login success")
             loginPacket = packet
             connectServer()
             return true
         }
         return false
+    }
+
+
+    private fun extractExtraDataFromChain(packet: LoginPacket): JsonObject? {
+        if (packet.authPayload is CertificateChainPayload) {
+            val chain = (packet.authPayload as CertificateChainPayload).chain
+
+            chain.forEach { jwt ->
+                val payload = jwtPayload(jwt)
+                if (payload?.has("extraData") == true) {
+                    return payload.getAsJsonObject("extraData")
+                }
+            }
+        }
+        return null
     }
 }

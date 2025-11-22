@@ -20,6 +20,7 @@ import com.project.lumina.client.constructors.GameManager
 import com.project.lumina.client.game.module.api.config.ConfigManagerElement
 
 import com.project.lumina.client.util.HashCat
+import com.project.lumina.client.util.SessionManager
 import com.project.lumina.client.util.TrackUtil
 import com.project.lumina.client.util.UpdateCheck
 
@@ -79,6 +80,9 @@ class RemoteLinkActivity : ComponentActivity() {
 
         amplitude.track("Remote Link Opened")
         enableEdgeToEdge()
+
+        val sessionManager = SessionManager(applicationContext)
+        sessionManager.checkSession(this)
         val updateCheck = UpdateCheck()
         updateCheck.initiateHandshake(this)
         setContent {

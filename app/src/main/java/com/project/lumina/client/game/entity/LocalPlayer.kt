@@ -124,11 +124,11 @@ class LocalPlayer(val session: NetBound) : Player(0L, 0L, UUID.randomUUID(), "")
     fun attack(entity: Entity) {
         swing()
 
-//        Log.d(
-//            "LocalPlayer", """
-//            Attack - hotbarSlot: ${inventory.heldItemSlot}, hand: ${inventory.hand}
-//        """.trimIndent()
-//        )
+
+
+
+
+
 
         val inventoryTransactionPacket = InventoryTransactionPacket().apply {
             transactionType = InventoryTransactionType.ITEM_USE_ON_ENTITY

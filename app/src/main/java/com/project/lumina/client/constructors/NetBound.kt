@@ -48,6 +48,7 @@ import org.cloudburstmc.protocol.bedrock.packet.BookEditPacket
 import org.cloudburstmc.protocol.bedrock.packet.CommandRequestPacket
 import org.cloudburstmc.protocol.bedrock.packet.MoveEntityAbsolutePacket
 import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket
+import org.cloudburstmc.protocol.bedrock.packet.ToastRequestPacket
 import org.cloudburstmc.protocol.common.SimpleDefinitionRegistry
 import java.util.Collections
 import java.util.UUID
@@ -216,6 +217,7 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
                     Log.i("GameSession", "Seed: ${gameDataManager.getSeed()}")
                     Log.i("GameSession", "Game Mode: ${gameDataManager.getGameMode()}")
                     Log.i("GameSession", "LevelName: ${gameDataManager.getLevelName()}")
+                    showToast("Welcome To Lumina V4", "Connected ${gameDataManager.getLevelName()}")
 
                     /**
                     try {
@@ -232,10 +234,6 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
             }
 
             is ItemComponentPacket -> {
-<<<<<<< HEAD
-=======
-                // Handle modern protocol itemDefinitions (v776+)
->>>>>>> 7ecab2664e9649c6e702bacb60cb53c1d0039246
                 try {
                     val itemDefinitions = SimpleDefinitionRegistry.builder<ItemDefinition>()
                         .addAll(packet.items)
@@ -294,7 +292,6 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
             if (interceptablePacket.isIntercepted) return true
         }
 
-        displayClientMessage("[Lumina V4]", TextPacket.Type.TIP)
 
         return false
     }
@@ -316,6 +313,10 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
         SelectedMobsManager.resetDetections()
         SelectedMobsManager.resetOnDisconnect()
         startGameReceived = false
+
+        minimapEnabled = false
+        MiniMapOverlay.setOverlayEnabled(false)
+        MiniMapOverlay.clearAllEntities()
 
         for (module in GameManager.elements) {
             module.onDisconnect(reason)
@@ -404,53 +405,39 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
     }
 
     fun updatePlayerPosition(x: Float, z: Float) {
-        playerPosition = Position(x, z)
         if (minimapEnabled) {
-            scheduleMinimapUpdate()
+            MiniMapOverlay.setCenter(x, z)
         }
     }
-
     fun updatePlayerRotation(yaw: Float) {
-        playerRotation = yaw
         if (minimapEnabled) {
-            scheduleMinimapUpdate()
+            MiniMapOverlay.setPlayerRotation(yaw)
         }
     }
 
     fun updateEntityPosition(entityId: Long, x: Float, z: Float) {
-        entityPositions[entityId] = Position(x, z)
-        if (minimapEnabled && !minimapUpdateScheduled) {
-            scheduleMinimapUpdate()
-        }
+        // This method is deprecated - entities are now handled through EntityStorage
+        // Keep for backward compatibility but log warning
+        Log.w("NetBound", "updateEntityPosition is deprecated, use EntityStorage instead")
     }
+
 
     fun updateMinimapSize(size: Float) {
-        minimapSize = size
         if (minimapEnabled) {
-            mainScope.launch {
-                MiniMapOverlay.setMinimapSize(size)
-                updateMinimap()
-            }
+            MiniMapOverlay.setMinimapSize(size)
         }
     }
 
+
     fun updateMinimapZoom(zoom: Float) {
-        minimapZoom = zoom
         if (minimapEnabled) {
-            mainScope.launch {
-                MiniMapOverlay.overlayInstance.minimapZoom = zoom
-                updateMinimap()
-            }
+            MiniMapOverlay.overlayInstance.minimapZoom = zoom
         }
     }
 
     fun updateDotSize(dotSize: Int) {
-        minimapDotSize = dotSize
         if (minimapEnabled) {
-            mainScope.launch {
-                MiniMapOverlay.overlayInstance.minimapDotSize = dotSize
-                updateMinimap()
-            }
+            MiniMapOverlay.overlayInstance.minimapDotSize = dotSize
         }
     }
 
@@ -467,19 +454,13 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
     fun enableMinimap(enable: Boolean) {
         if (enable != minimapEnabled) {
             minimapEnabled = enable
-            if (enable) {
-                mainScope.launch {
-                    MiniMapOverlay.setOverlayEnabled(true)
-                    MiniMapOverlay.setMinimapSize(minimapSize)
-                    updateMinimap()
-                }
-            } else {
-                mainScope.launch {
-                    MiniMapOverlay.setOverlayEnabled(false)
-                }
+            MiniMapOverlay.setOverlayEnabled(enable)
+            if (!enable) {
+                MiniMapOverlay.clearAllEntities()
             }
         }
     }
+
 
     private fun updateMinimap() {
         try {
@@ -489,15 +470,6 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
             MiniMapOverlay.overlayInstance.minimapZoom = minimapZoom
             MiniMapOverlay.overlayInstance.minimapDotSize = minimapDotSize
 
-            val targets = entityPositions.values.toList()
-
-            val finalTargets = if (targets.isEmpty()) {
-                targets
-            } else {
-                targets
-            }
-
-            MiniMapOverlay.setTargets(finalTargets)
             MiniMapOverlay.showOverlay()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -505,23 +477,15 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
     }
 
     fun clearEntityPositions() {
-        entityPositions.clear()
-        if (minimapEnabled) {
-            scheduleMinimapUpdate()
-        }
+
+        MiniMapOverlay.clearAllEntities()
     }
 
     fun showMinimap(centerX: Float, centerZ: Float, targets: List<Position>) {
-        mainScope.launch {
-            MiniMapOverlay.setOverlayEnabled(true)
-            MiniMapOverlay.setMinimapSize(minimapSize)
-            MiniMapOverlay.setCenter(centerX, centerZ)
-            MiniMapOverlay.setTargets(targets)
-            MiniMapOverlay.showOverlay()
-
-            minimapEnabled = true
-            playerPosition = Position(centerX, centerZ)
-        }
+        // Deprecated method - kept for compatibility
+         Log.w("NetBound", "showMinimap with targets list is deprecated")
+        enableMinimap(true)
+        MiniMapOverlay.setCenter(centerX, centerZ)
     }
 
     fun enableArrayList(boolean: Boolean) {
@@ -559,4 +523,11 @@ class NetBound(val luminaRelaySession: LuminaRelaySession) : ComposedPacketHandl
     }
 
     fun getStoredEntities(): Map<Long, EntityStorage.EntityInfo> = entityStorage.getEntities()
+
+    fun showToast(title: CharSequence, content: CharSequence) {
+        val toastPacket = ToastRequestPacket()
+        toastPacket.title = title
+        toastPacket.content = content
+        clientBound(toastPacket)
+    }
 }

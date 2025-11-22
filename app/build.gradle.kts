@@ -18,13 +18,8 @@ android {
         applicationId = "com.project.lumina.client"
         minSdk = 28
         targetSdk = 36
-<<<<<<< HEAD
-        versionCode = 7
-        versionName = "4.1.6"
-=======
-        versionCode = 6
-        versionName = "4.1.5"
->>>>>>> 7ecab2664e9649c6e702bacb60cb53c1d0039246
+        versionCode = 9
+        versionName = "4.1.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -151,6 +146,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
     implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("androidx.browser:browser:1.7.0")
     implementation(libs.kotlinx.serialization.json.jvm)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

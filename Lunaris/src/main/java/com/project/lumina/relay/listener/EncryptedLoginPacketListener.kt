@@ -1,13 +1,11 @@
 package com.project.lumina.relay.listener
 
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.project.lumina.relay.LuminaRelaySession
-import com.project.lumina.relay.util.base64Decode
-import com.project.lumina.relay.util.gson
-import com.project.lumina.relay.util.jwtPayload
-import com.project.lumina.relay.util.signJWT
-import net.kyori.adventure.text.Component
+import com.project.lumina.relay.util.*
 import org.cloudburstmc.protocol.bedrock.data.PacketCompressionAlgorithm
+import org.cloudburstmc.protocol.bedrock.data.auth.AuthType
 import org.cloudburstmc.protocol.bedrock.data.auth.CertificateChainPayload
 import org.cloudburstmc.protocol.bedrock.packet.*
 import org.cloudburstmc.protocol.bedrock.util.EncryptionUtils
@@ -17,29 +15,28 @@ import java.util.Base64
 open class EncryptedLoginPacketListener : LuminaRelayPacketListener {
 
     protected var keyPair: KeyPair = EncryptionUtils.createKeyPair()
-
     protected var loginPacket: LoginPacket? = null
-
     lateinit var luminaRelaySession: LuminaRelaySession
 
     override fun beforeClientBound(packet: BedrockPacket): Boolean {
         if (packet is LoginPacket) {
-            var newChain: String? = null
-            if (packet.authPayload is CertificateChainPayload) {
-                val authPayload = packet.authPayload as CertificateChainPayload
-                authPayload.chain.forEach { chain ->
-                    val chainBody = jwtPayload(chain) ?: return@forEach
-                    if (chainBody.has("extraData")) {
-                        chainBody.addProperty(
-                            "identityPublicKey",
-                            Base64.getEncoder().withoutPadding().encodeToString(keyPair.public.encoded)
-                        )
-                        newChain = signJWT(gson.toJson(chainBody), keyPair)
-                    }
-                }
-                if (newChain != null) {
-                    packet.authPayload = CertificateChainPayload(listOf(newChain!!), authPayload.getAuthType())
-                }
+            try {
+
+                val extraData = extractExtraData(packet)
+
+                val newChain = forgeAuthData(keyPair, extraData)
+
+                packet.authPayload = CertificateChainPayload(listOf(newChain), AuthType.SELF_SIGNED)
+
+                val skinData = extractSkinData(packet)
+                packet.clientJwt = forgeSkinData(keyPair, skinData)
+
+                println("Forged authentication chain for encrypted relay")
+            } catch (e: Exception) {
+                println("Failed to forge authentication chain: $e")
+                e.printStackTrace()
+                luminaRelaySession.server.disconnect("Authentication failed")
+                return false
             }
 
             loginPacket = packet
@@ -55,28 +52,53 @@ open class EncryptedLoginPacketListener : LuminaRelayPacketListener {
                 val threshold = packet.compressionThreshold
                 if (threshold > 0) {
                     luminaRelaySession.client!!.setCompression(packet.compressionAlgorithm)
-                    println("Compression threshold set to $threshold")
+                    println("Compression threshold set to $threshold with ${packet.compressionAlgorithm}")
                 } else {
                     luminaRelaySession.client!!.setCompression(PacketCompressionAlgorithm.NONE)
-                    println("Compression threshold set to 0")
+                    println("Compression disabled")
                 }
 
-                loginPacket?.let { luminaRelaySession.serverBoundImmediately(it) }
-                    ?: luminaRelaySession.server.disconnect("LoginPacket is null") // Fixed here
+
+                loginPacket?.let {
+                    luminaRelaySession.serverBoundImmediately(it)
+                    println("Login packet sent to server")
+                } ?: run {
+                    luminaRelaySession.server.disconnect("LoginPacket is null")
+                }
                 return true
             }
+
             is ServerToClientHandshakePacket -> {
-                val jwtSplit = packet.jwt.split(".")
-                val headerObject = JsonParser.parseString(base64Decode(jwtSplit[0]).toString(Charsets.UTF_8)).asJsonObject
-                val payloadObject = JsonParser.parseString(base64Decode(jwtSplit[1]).toString(Charsets.UTF_8)).asJsonObject
-                val serverKey = EncryptionUtils.parseKey(headerObject.get("x5u").asString)
-                val key = EncryptionUtils.getSecretKey(
-                    keyPair.private, serverKey,
-                    base64Decode(payloadObject.get("salt").asString)
-                )
-                luminaRelaySession.client!!.enableEncryption(key)
-                println("Encryption enabled")
-                luminaRelaySession.serverBoundImmediately(ClientToServerHandshakePacket())
+                try {
+
+                    val jwtSplit = packet.jwt.split(".")
+                    val headerObject = JsonParser.parseString(
+                        base64Decode(jwtSplit[0]).toString(Charsets.UTF_8)
+                    ).asJsonObject
+                    val payloadObject = JsonParser.parseString(
+                        base64Decode(jwtSplit[1]).toString(Charsets.UTF_8)
+                    ).asJsonObject
+
+                    val serverKey = EncryptionUtils.parseKey(headerObject.get("x5u").asString)
+
+
+                    val key = EncryptionUtils.getSecretKey(
+                        keyPair.private,
+                        serverKey,
+                        base64Decode(payloadObject.get("salt").asString)
+                    )
+
+
+                    luminaRelaySession.client!!.enableEncryption(key)
+                    println("Encryption enabled with server")
+
+
+                    luminaRelaySession.serverBoundImmediately(ClientToServerHandshakePacket())
+                } catch (e: Exception) {
+                    println("Failed to complete encryption handshake: $e")
+                    e.printStackTrace()
+                    luminaRelaySession.server.disconnect("Encryption handshake failed")
+                }
                 return true
             }
         }
@@ -91,5 +113,42 @@ open class EncryptedLoginPacketListener : LuminaRelayPacketListener {
             packet.protocolVersion = luminaRelaySession.server.codec.protocolVersion
             luminaRelaySession.serverBoundImmediately(packet)
         }
+    }
+
+
+    private fun extractExtraData(packet: LoginPacket): JsonObject {
+        val extraData = JsonObject()
+
+        if (packet.authPayload is CertificateChainPayload) {
+            val chain = (packet.authPayload as CertificateChainPayload).chain
+
+
+            chain.forEach { jwt ->
+                val payload = jwtPayload(jwt)
+                if (payload?.has("extraData") == true) {
+                    val data = payload.getAsJsonObject("extraData")
+
+                    data.entrySet().forEach { (key, value) ->
+                        extraData.add(key, value)
+                    }
+                    return extraData
+                }
+            }
+        }
+
+
+        extraData.addProperty("displayName", "LuminaUser")
+        extraData.addProperty("identity", "00000000-0000-0000-0000-000000000000")
+
+        return extraData
+    }
+
+
+    private fun extractSkinData(packet: LoginPacket): JsonObject {
+        return jwtPayload(packet.clientJwt ?: "")
+            ?: JsonObject().apply {
+                addProperty("SkinId", "")
+                addProperty("SkinData", "")
+            }
     }
 }

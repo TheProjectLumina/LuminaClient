@@ -1,37 +1,5 @@
 /*
  * © Project Lumina 2025 — Licensed under GNU GPLv3
- * You are free to use, modify, and redistribute this code under the terms
- * of the GNU General Public License v3. See the LICENSE file for details.
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * This is open source — not open credit.
- *
- * If you're here to build, welcome. If you're here to repaint and reupload
- * with your tag slapped on it… you're not fooling anyone.
- *
- * Changing colors and class names doesn't make you a developer.
- * Copy-pasting isn't contribution.
- *
- * You have legal permission to fork. But ask yourself — are you improving,
- * or are you just recycling someone else's work to feed your ego?
- *
- * Open source isn't about low-effort clones or chasing clout.
- * It's about making things better. Sharper. Cleaner. Smarter.
- *
- * So go ahead, fork it — but bring something new to the table,
- * or don't bother pretending.
- *
- * This message is philosophical. It does not override your legal rights under GPLv3.
- * ─────────────────────────────────────────────────────────────────────────────
- *
- * GPLv3 Summary:
- * - You have the freedom to run, study, share, and modify this software.
- * - If you distribute modified versions, you must also share the source code.
- * - You must keep this license and copyright intact.
- * - You cannot apply further restrictions — the freedom stays with everyone.
- * - This license is irrevocable, and applies to all future redistributions.
- *
- * Full text: https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 package com.project.lumina.client.game.module.impl.world
@@ -40,14 +8,14 @@ import com.project.lumina.client.R
 import com.project.lumina.client.game.InterceptablePacket
 import com.project.lumina.client.constructors.Element
 import com.project.lumina.client.constructors.CheatCategory
-import com.project.lumina.client.game.entity.Entity
-import com.project.lumina.client.game.entity.EntityUnknown
-import com.project.lumina.client.game.entity.LocalPlayer
-import com.project.lumina.client.game.entity.MobList
 import com.project.lumina.client.game.entity.Player
+import com.project.lumina.client.game.entity.LocalPlayer
+import com.project.lumina.client.overlay.mods.MiniMapOverlay
 import org.cloudburstmc.protocol.bedrock.packet.PlayerAuthInputPacket
-import org.cloudburstmc.protocol.bedrock.packet.MoveEntityAbsolutePacket
+import org.cloudburstmc.protocol.bedrock.packet.RemoveEntityPacket
+import org.cloudburstmc.protocol.bedrock.packet.PlayerListPacket
 import kotlin.math.PI
+import kotlin.math.sqrt
 
 class MinimapElement : Element(
     name = "Minimap",
@@ -55,27 +23,25 @@ class MinimapElement : Element(
     displayNameResId = R.string.module_minimap_display_name
 ) {
 
-
     private val playerOnly by boolValue("Players", false)
-    private var mobsOnly by boolValue("Mobs", true)
-    private var rangeValue = 1000
+    private val mobsOnly by boolValue("Mobs", true)
+    private val rangeValue = 1000f
     private val sizeOption by intValue("Size", 100, 60..300)
-
-    
     private val zoomOption by floatValue("Zoom", 1.0f, 0.5f..2.0f)
-
-    
     private val dotSizeOption by intValue("DotSize", 5, 1..10)
+
+    // Track players separately for cleanup
+    private val trackedPlayers = mutableSetOf<Long>()
+    private var lastCleanupTime = 0L
+    private val cleanupInterval = 3000L // Cleanup every 3 seconds
 
     override fun onEnabled() {
         super.onEnabled()
-
         try {
             if (isSessionCreated) {
                 session.enableMinimap(true)
-                updateMiniMapSettings()
-            } else {
-                println("Session not created, cannot enable Minimap.")
+                updateMinimapSettings()
+                clearAllTracking()
             }
         } catch (e: Exception) {
             println("Error enabling Minimap: ${e.message}")
@@ -84,22 +50,28 @@ class MinimapElement : Element(
 
     override fun onDisabled() {
         super.onDisabled()
-
         if (isSessionCreated) {
             session.enableMinimap(false)
+            clearAllTracking()
         }
     }
 
     override fun onDisconnect(reason: String) {
         if (isSessionCreated) {
-            session.clearEntityPositions()
+            clearAllTracking()
         }
     }
 
-    private fun updateMiniMapSettings() {
-        session.updateMinimapSize(sizeOption.toFloat())
-        session.updateMinimapZoom(zoomOption)
-        session.updateDotSize(dotSizeOption)
+    private fun updateMinimapSettings() {
+        MiniMapOverlay.setMinimapSize(sizeOption.toFloat())
+        MiniMapOverlay.overlayInstance.minimapZoom = zoomOption
+        MiniMapOverlay.overlayInstance.minimapDotSize = dotSizeOption
+    }
+
+    private fun clearAllTracking() {
+        trackedPlayers.clear()
+        MiniMapOverlay.clearAllEntities()
+        lastCleanupTime = 0L
     }
 
     override fun beforePacketBound(interceptablePacket: InterceptablePacket) {
@@ -107,77 +79,136 @@ class MinimapElement : Element(
 
         val packet = interceptablePacket.packet
 
+        when (packet) {
+            is PlayerAuthInputPacket -> {
+                // Update player position and rotation
+                val position = packet.position
+                session.updatePlayerPosition(position.x, position.z)
 
-        if(packet is PlayerAuthInputPacket) {
-            val closestEntities = searchForClosestEntities()
-            if (closestEntities.isEmpty()) return
+                val yawRadians = (packet.rotation.y * PI / 180).toFloat()
+                session.updatePlayerRotation(yawRadians)
 
-
-            closestEntities.forEach { entity ->
-
-                val entityId = entity.runtimeEntityId
-                val position = entity.vec3Position
-
-
-
-                session.updateEntityPosition(entityId, position.x, position.z)
-                updateMiniMapSettings()
-
-
-            }
-
-        }
-        
-        if (packet is PlayerAuthInputPacket) {
-            val position = packet.position
-            session.updatePlayerPosition(position.x, position.z)
-
-            
-            val yawRadians = (packet.rotation.y * PI / 180).toFloat()
-            session.updatePlayerRotation(yawRadians)
-        }
-
-        
-
-    }
-
-    private fun Entity.isTarget(): Boolean {
-        return when (this) {
-            is LocalPlayer -> false
-            is Player -> {
-                if (playerOnly || (playerOnly && mobsOnly)) {
-                    !this.isBot()
-                } else {
-                    false
-                }
-            }
-
-            is EntityUnknown -> {
+                // Update entities from EntityStorage (mobs)
                 if (mobsOnly || (playerOnly && mobsOnly)) {
-                    isMob()
-                } else {
-                    false
+                    val entities = session.getStoredEntities()
+                    entities.values.forEach { entityInfo ->
+                        MiniMapOverlay.updateEntity(
+                            id = entityInfo.id,
+                            x = entityInfo.coords.x,
+                            y = entityInfo.coords.z,
+                            name = entityInfo.name,
+                            imagePath = entityInfo.imagePath,
+                            isPlayer = false
+                        )
+                    }
+                }
+
+                // Update players
+                if (playerOnly || (playerOnly && mobsOnly)) {
+                    updatePlayers()
+                }
+
+                // Periodic cleanup
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastCleanupTime > cleanupInterval) {
+                    performCleanup()
+                    lastCleanupTime = currentTime
+                }
+
+                updateMinimapSettings()
+            }
+
+            is RemoveEntityPacket -> {
+                // Remove entity from minimap - need to find by uniqueEntityId
+                val entity = session.level.entityMap.values.find {
+                    it.uniqueEntityId == packet.uniqueEntityId
+                }
+                if (entity != null) {
+                    MiniMapOverlay.removeEntity(entity.runtimeEntityId)
+                    trackedPlayers.remove(entity.runtimeEntityId)
                 }
             }
 
-            else -> false
+            is PlayerListPacket -> {
+                // Handle player disconnections
+                if (packet.action == PlayerListPacket.Action.REMOVE) {
+                    packet.entries.forEach { entry ->
+                        // Find player entity by UUID
+                        val playerEntity = session.level.entityMap.values.find { entity ->
+                            entity is Player && entity.uuid == entry.uuid
+                        }
+                        if (playerEntity != null) {
+                            MiniMapOverlay.removeEntity(playerEntity.runtimeEntityId)
+                            trackedPlayers.remove(playerEntity.runtimeEntityId)
+                        }
+                    }
+                }
+            }
         }
     }
 
+    private fun updatePlayers() {
+        val currentPlayers = mutableSetOf<Long>()
+        val localPlayerPos = session.localPlayer.vec3Position
 
-    private fun EntityUnknown.isMob(): Boolean {
-        return this.identifier in MobList.mobTypes
+        // Iterate through entity map to find Player entities
+        session.level.entityMap.values.forEach { entity ->
+            if (entity !is Player) return@forEach
+            if (entity is LocalPlayer) return@forEach
+
+            // Check if bot by looking up in playerMap
+            val playerListEntry = session.level.playerMap[entity.uuid]
+            if (playerListEntry == null || playerListEntry.name.toString().isBlank()) {
+                return@forEach
+            }
+
+            // Calculate distance
+            val entityPos = entity.vec3Position
+            val dx = entityPos.x - localPlayerPos.x
+            val dy = entityPos.y - localPlayerPos.y
+            val dz = entityPos.z - localPlayerPos.z
+            val distance = sqrt((dx * dx + dy * dy + dz * dz).toDouble()).toFloat()
+
+            if (distance > rangeValue) return@forEach
+
+            val entityId = entity.runtimeEntityId
+            currentPlayers.add(entityId)
+            trackedPlayers.add(entityId)
+
+            MiniMapOverlay.updateEntity(
+                id = entityId,
+                x = entityPos.x,
+                y = entityPos.z,
+                name = entity.username,
+                imagePath = null, // Players don't have image paths
+                isPlayer = true
+            )
+        }
+
+        // Remove players no longer in range
+        val removedPlayers = trackedPlayers - currentPlayers
+        removedPlayers.forEach { playerId ->
+            MiniMapOverlay.removeEntity(playerId)
+            trackedPlayers.remove(playerId)
+        }
     }
 
-    private fun Player.isBot(): Boolean {
-        if (this is LocalPlayer) return false
-        val playerList = session.level.playerMap[this.uuid] ?: return true
-        return playerList.name.toString().isBlank()
-    }
+    private fun performCleanup() {
+        // Verify all tracked players still exist in entity map
+        val validPlayers = mutableSetOf<Long>()
 
-    private fun searchForClosestEntities(): List<Entity> {
-        return session.level.entityMap.values
-            .filter { entity -> entity.distance(session.localPlayer) < rangeValue && entity.isTarget() }
+        trackedPlayers.forEach { playerId ->
+            val playerExists = session.level.entityMap.containsKey(playerId)
+            if (playerExists) {
+                validPlayers.add(playerId)
+            } else {
+                // Entity no longer exists, remove from minimap
+                MiniMapOverlay.removeEntity(playerId)
+            }
+        }
+
+        // Update tracked players to only include valid ones
+        trackedPlayers.clear()
+        trackedPlayers.addAll(validPlayers)
     }
 }
-

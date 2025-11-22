@@ -30,12 +30,12 @@ class AutoTotemElement(iconResId: Int = AssetManager.getAsset("ic_shield")) : El
 
     override fun onEnabled() {
         super.onEnabled()
-       // Log.i(TAG, "AutoTotem enabled - delay: ${delay}ms, lowHealth: $onlyWhenLowHealth, threshold: $healthThreshold, replaceOffhand: $replaceOffhand")
+       
     }
 
     override fun onDisabled() {
         super.onDisabled()
-     //   Log.i(TAG, "AutoTotem disabled")
+     
     }
 
     override fun beforePacketBound(interceptablePacket: InterceptablePacket) {
@@ -50,7 +50,7 @@ class AutoTotemElement(iconResId: Int = AssetManager.getAsset("ic_shield")) : El
         if (onlyWhenLowHealth) {
             val healthAttribute = session.localPlayer.attributes[Attribute.HEALTH]
             val currentHealth = healthAttribute?.value ?: 20f
-          //  Log.v(TAG, "Health check: current=$currentHealth, threshold=$healthThreshold")
+          
             if (currentHealth > healthThreshold) return
         }
 
@@ -58,18 +58,18 @@ class AutoTotemElement(iconResId: Int = AssetManager.getAsset("ic_shield")) : El
         //Log.v(TAG, "Offhand item: ${offhandItem.definition?.identifier ?: "AIR"} x${offhandItem.count}")
 
         if (isTotem(offhandItem)) {
-        //    Log.v(TAG, "Totem already in offhand, skipping")
+        
             return
         }
 
         val totemSlot = findTotemInInventory()
         if (totemSlot == null) {
-         //   Log.v(TAG, "No totem found in inventory")
+         
             return
         }
 
         if (!replaceOffhand && offhandItem != ItemData.AIR) {
-           // Log.v(TAG, "Offhand occupied and replace disabled: ${offhandItem.definition?.identifier}")
+           
             return
         }
 
@@ -82,23 +82,23 @@ class AutoTotemElement(iconResId: Int = AssetManager.getAsset("ic_shield")) : El
         if (item == ItemData.AIR) return false
         val identifier = item.definition?.identifier
         val isTotem = identifier == "minecraft:totem_of_undying"
-     //   Log.v(TAG, "Item check: $identifier -> isTotem: $isTotem")
+     
         return isTotem
     }
 
     private fun findTotemInInventory(): Int? {
         val inventory = session.localPlayer.inventory
-    //    Log.v(TAG, "Searching for totem in inventory slots 0-35")
+    
 
         for (i in 0 until 36) {
             val item = inventory.content[i]
             if (isTotem(item)) {
-        //        Log.d(TAG, "Found totem in slot $i: ${item.definition?.identifier} x${item.count}")
+        
                 return i
             }
         }
 
-    //    Log.v(TAG, "No totem found in inventory")
+    
         return null
     }
 
@@ -108,18 +108,18 @@ class AutoTotemElement(iconResId: Int = AssetManager.getAsset("ic_shield")) : El
 
             val sourceItem = inventory.content[sourceSlot]
             if (!isTotem(sourceItem)) {
-       //         Log.w(TAG, "Totem no longer exists in slot $sourceSlot: ${sourceItem.definition?.identifier ?: "AIR"}")
+       
                 return
             }
 
             val offhandItem = inventory.offhand
-//            Log.d(TAG, "Moving totem from slot $sourceSlot to offhand")
-//            Log.d(TAG, "Source: ${sourceItem.definition?.identifier} x${sourceItem.count}")
-//            Log.d(TAG, "Current offhand: ${offhandItem.definition?.identifier ?: "AIR"} x${offhandItem.count}")
+
+
+
 
             inventory.moveItem(sourceSlot, 40, inventory, session)
 
-     //       Log.i(TAG, "Totem move operation completed successfully")
+     
         } catch (e: Exception) {
             //Log.e(TAG, "Failed to move totem to offhand", e)
         }

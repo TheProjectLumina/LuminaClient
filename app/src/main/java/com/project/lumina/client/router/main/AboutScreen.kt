@@ -200,7 +200,7 @@ fun AboutScreen() {
                 .fillMaxSize()
                 .padding(24.dp)
         ) {
-            // Left Column - About Lumina
+            
             Column(
                 modifier = Modifier
                     .weight(0.6f)

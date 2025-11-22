@@ -110,7 +110,7 @@ class ClickGUI : OverlayWindow() {
                     verticalAlignment = Alignment.Top
                 ) {
                     CheatCategory.entries
-                        .filter { it != CheatCategory.Config && it != CheatCategory.Home }
+                        .filter { it != CheatCategory.Config && it != CheatCategory.Home && it != CheatCategory.Chat }
                         .fastForEach { category ->
                             CategoryOverlay(category = category)
                         }

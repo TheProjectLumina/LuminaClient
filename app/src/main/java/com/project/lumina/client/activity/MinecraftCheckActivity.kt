@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 
 import com.project.lumina.client.ui.theme.LuminaClientTheme
 import androidx.core.net.toUri
+import com.project.lumina.client.util.SessionManager
 
 class MinecraftCheckActivity : ComponentActivity() {
     private val minecraftPackage = "com.mojang.minecraftpe"
@@ -67,7 +68,8 @@ class MinecraftCheckActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
+        val sessionManager = SessionManager(applicationContext)
+        sessionManager.checkSession(this)
         if (isMinecraftInstalled()) {
             startVersionCheckerActivity()
         } else {

@@ -383,7 +383,7 @@ class GameInfoCommands(
                     netBound.showSpeedometer(position)
                     sendClientMessage("${SUCCESS_COLOR}Speedometer overlay enabled.")
                 } else {
-                    // Note: NetBound doesn't have a direct method to disable speedometer, so we may need to add one
+                    
                     sendClientMessage("${ERROR_COLOR}Disabling speedometer not supported yet.")
                 }
             }
@@ -392,7 +392,7 @@ class GameInfoCommands(
                     sendClientMessage("${ERROR_COLOR}Usage: $ACCENT_COLOR!overlay keystrokes [on/off]")
                     return
                 }
-                // Note: KeystrokesOverlay doesn't have a direct enable/disable method, so we may need to add one
+                
                 sendClientMessage("${ERROR_COLOR}Keystrokes overlay toggle not supported yet.")
             }
             else -> sendClientMessage("${ERROR_COLOR}Invalid overlay option. Use arraylist/speedometer/keystrokes.")

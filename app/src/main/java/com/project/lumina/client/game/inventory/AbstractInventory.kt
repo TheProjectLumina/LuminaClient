@@ -185,29 +185,29 @@ abstract class AbstractInventory(val containerId: Int) {
         val isServerAuth = session.localPlayer.inventoriesServerAuthoritative
         val requestId = if (isServerAuth) session.localPlayer.inventory.getRequestId() else Int.MAX_VALUE
 
-//        android.util.Log.d("AbstractInventory", "moveItem: source=$containerId:$sourceSlot -> dest=${destinationInventory.containerId}:$destinationSlot")
-//        android.util.Log.d("AbstractInventory", "Source item: ${sourceItem.definition?.identifier ?: "AIR"} x${sourceItem.count}")
-//        android.util.Log.d("AbstractInventory", "Dest item: ${destItem.definition?.identifier ?: "AIR"} x${destItem.count}")
-//        android.util.Log.d("AbstractInventory", "Server authoritative: $isServerAuth, requestId: $requestId")
+
+
+
+
 
         val pk = moveItem(sourceSlot, destinationSlot, destinationInventory, requestId)
 
-//        android.util.Log.d("AbstractInventory", "Generated packet: ${pk.javaClass.simpleName}")
+
         if (pk is InventoryTransactionPacket) {
-//            android.util.Log.d("AbstractInventory", "Transaction type: ${pk.transactionType}")
-//            android.util.Log.d("AbstractInventory", "Actions count: ${pk.actions.size}")
+
+
             pk.actions.forEachIndexed { index, action ->
-  //              android.util.Log.d("AbstractInventory", "Action $index: ${action.source.type}:${action.source.containerId}:${action.slot} ${action.fromItem.definition?.identifier ?: "AIR"} -> ${action.toItem.definition?.identifier ?: "AIR"}")
+  
             }
         } else if (pk is ItemStackRequestPacket) {
-        //    android.util.Log.d("AbstractInventory", "ItemStackRequest with ${pk.requests.size} requests")
+        
             pk.requests.forEachIndexed { index, request ->
-  //              android.util.Log.d("AbstractInventory", "Request $index: ID=${request.requestId}, actions=${request.actions.size}")
+  
             }
         }
 
         sendInventoryPacket(pk, destinationInventory, session)
-     //   android.util.Log.d("AbstractInventory", "Packet sent to server")
+     
 
         this.updateItem(session, sourceSlot)
         destinationInventory.updateItem(session, destinationSlot)
@@ -215,7 +215,7 @@ abstract class AbstractInventory(val containerId: Int) {
         this.notifySlotUpdate(session, sourceSlot)
         destinationInventory.notifySlotUpdate(session, destinationSlot)
 
-  //      android.util.Log.d("AbstractInventory", "Local inventory updates and notifications completed")
+  
     }
 
     protected fun updateItem(session: NetBound, slot: Int) {

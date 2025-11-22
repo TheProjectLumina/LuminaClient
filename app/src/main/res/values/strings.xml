@@ -226,10 +226,7 @@
     <string name="module_fakeping_display_name">PingSpoof</string>
     <string name="module_chest_stealer_display_name">ChestStealer</string>
     <string name="module_invhelper_display_name">InvHelper</string>
-<<<<<<< HEAD
     <string name="module_entity_radar_display_name">Entitity radar</string>
-=======
->>>>>>> 7ecab2664e9649c6e702bacb60cb53c1d0039246
     <!-- Config Module Strings -->
     <string name="module_config_manager">Config Manager</string>
     <string name="save_config">Save Config</string>

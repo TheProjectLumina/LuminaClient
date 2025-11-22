@@ -91,7 +91,7 @@ class WClientUI : OverlayWindow() {
                 ) { OverlayManager.dismissOverlayWindow(this) },
             contentAlignment = Alignment.Center
         ) {
-            // Compact Premium Container
+            
             Box(
                 modifier = Modifier
                     .size(width = 720.dp, height = 480.dp)
@@ -114,10 +114,10 @@ class WClientUI : OverlayWindow() {
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Compact Header
+                    
                     CompactHeader()
 
-                    // Main Content Area
+                    
                     MainContentArea()
                 }
             }
@@ -135,10 +135,10 @@ class WClientUI : OverlayWindow() {
                 .background(
                     Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xF53E3E3E), // Nearly opaque white
-                            Color(0xE0404040), // Slightly less opaque white
-                            Color(0xEA363636), // Subtle white variation
-                            Color(0xF5262626)  // Loop back to nearly opaque white
+                            Color(0xF53E3E3E), 
+                            Color(0xE0404040), 
+                            Color(0xEA363636), 
+                            Color(0xF5262626)  
                         )
                     ),
                     RoundedCornerShape(15.dp)
@@ -152,7 +152,7 @@ class WClientUI : OverlayWindow() {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Logo and Title
+            
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -182,7 +182,7 @@ class WClientUI : OverlayWindow() {
                 RainbowText("Project Lumina", fontSize = 20f, fontWeight = FontWeight.Bold)
             }
 
-            // Action Buttons
+            
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 PremiumIconButton(
                     iconRes = R.drawable.ic_discord,
@@ -214,10 +214,10 @@ class WClientUI : OverlayWindow() {
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Compact Category Sidebar
+            
             CompactCategorySidebar()
 
-            // Content Area with Premium Border
+            
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -514,7 +514,7 @@ class WClientUI : OverlayWindow() {
         }
     }
 
-    // Enhanced RGB Animated Border Modifier
+    
     @Composable
     private fun Modifier.rgbBorder(): Modifier {
         val transition = rememberInfiniteTransition()
@@ -530,17 +530,17 @@ class WClientUI : OverlayWindow() {
             val strokeWidth = 4.dp.toPx()
             val radius = 20.dp.toPx()
 
-            // Create white-shaded gradient colors with subtle variations
+            
             val colors = listOf(
-                Color.hsv((phase) % 360f, 0.05f, 0.95f),      // Near-white with slight tint
-                Color.hsv((phase + 45) % 360f, 0.03f, 0.97f),  // Slightly brighter white
-                Color.hsv((phase + 90) % 360f, 0.05f, 0.93f),  // Subtle off-white
-                Color.hsv((phase + 135) % 360f, 0.04f, 0.96f), // Near-white
-                Color.hsv((phase + 180) % 360f, 0.05f, 0.94f), // Soft white
-                Color.hsv((phase + 225) % 360f, 0.03f, 0.98f), // Bright white
-                Color.hsv((phase + 270) % 360f, 0.05f, 0.95f), // Subtle tint
-                Color.hsv((phase + 315) % 360f, 0.04f, 0.97f), // Near-white
-                Color.hsv((phase) % 360f, 0.05f, 0.95f)       // Loop back to start
+                Color.hsv((phase) % 360f, 0.05f, 0.95f),      
+                Color.hsv((phase + 45) % 360f, 0.03f, 0.97f),  
+                Color.hsv((phase + 90) % 360f, 0.05f, 0.93f),  
+                Color.hsv((phase + 135) % 360f, 0.04f, 0.96f), 
+                Color.hsv((phase + 180) % 360f, 0.05f, 0.94f), 
+                Color.hsv((phase + 225) % 360f, 0.03f, 0.98f), 
+                Color.hsv((phase + 270) % 360f, 0.05f, 0.95f), 
+                Color.hsv((phase + 315) % 360f, 0.04f, 0.97f), 
+                Color.hsv((phase) % 360f, 0.05f, 0.95f)       
             )
 
             val brush = Brush.sweepGradient(colors)

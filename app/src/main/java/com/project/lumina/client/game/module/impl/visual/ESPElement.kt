@@ -113,7 +113,7 @@ class ESPElement : Element(
 
     private fun getEntityBoxVertices(entity: Entity): Array<Vector3f> {
         val width = 0.6f
-        val height = 1.8f // Standard player/entity height
+        val height = 1.8f 
 
         val pos = entity.vec3Position
         val halfWidth = width / 2f
@@ -125,14 +125,14 @@ class ESPElement : Element(
         }
 
         return arrayOf(
-            Vector3f.from(pos.x - halfWidth, yPos, pos.z - halfWidth),          // Bottom front left
-            Vector3f.from(pos.x - halfWidth, yPos + height, pos.z - halfWidth), // Top front left
-            Vector3f.from(pos.x + halfWidth, yPos + height, pos.z - halfWidth), // Top front right
-            Vector3f.from(pos.x + halfWidth, yPos, pos.z - halfWidth),          // Bottom front right
-            Vector3f.from(pos.x - halfWidth, yPos, pos.z + halfWidth),          // Bottom back left
-            Vector3f.from(pos.x - halfWidth, yPos + height, pos.z + halfWidth), // Top back left
-            Vector3f.from(pos.x + halfWidth, yPos + height, pos.z + halfWidth), // Top back right
-            Vector3f.from(pos.x + halfWidth, yPos, pos.z + halfWidth)           // Bottom back right
+            Vector3f.from(pos.x - halfWidth, yPos, pos.z - halfWidth),          
+            Vector3f.from(pos.x - halfWidth, yPos + height, pos.z - halfWidth), 
+            Vector3f.from(pos.x + halfWidth, yPos + height, pos.z - halfWidth), 
+            Vector3f.from(pos.x + halfWidth, yPos, pos.z - halfWidth),          
+            Vector3f.from(pos.x - halfWidth, yPos, pos.z + halfWidth),          
+            Vector3f.from(pos.x - halfWidth, yPos + height, pos.z + halfWidth), 
+            Vector3f.from(pos.x + halfWidth, yPos + height, pos.z + halfWidth), 
+            Vector3f.from(pos.x + halfWidth, yPos, pos.z + halfWidth)           
         )
     }
 
@@ -296,9 +296,9 @@ class ESPElement : Element(
         if (screenPositions.size < 8) return
 
         val edges = listOf(
-            0 to 1, 1 to 2, 2 to 3, 3 to 0,  // Front face
-            4 to 5, 5 to 6, 6 to 7, 7 to 4,  // Back face
-            0 to 4, 1 to 5, 2 to 6, 3 to 7   // Connecting edges
+            0 to 1, 1 to 2, 2 to 3, 3 to 0,  
+            4 to 5, 5 to 6, 6 to 7, 7 to 4,  
+            0 to 4, 1 to 5, 2 to 6, 3 to 7   
         )
 
         edges.forEach { (start, end) ->
