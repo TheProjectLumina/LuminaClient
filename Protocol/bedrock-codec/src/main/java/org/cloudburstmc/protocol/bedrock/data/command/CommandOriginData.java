@@ -9,5 +9,5 @@ public class CommandOriginData {
     private final CommandOriginType origin;
     private final UUID uuid;
     private final String requestId;
-    private final long event;
+    private final long playerId;
 }

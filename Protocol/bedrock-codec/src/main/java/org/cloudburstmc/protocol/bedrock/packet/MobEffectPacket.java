@@ -19,6 +19,10 @@ public class MobEffectPacket implements BedrockPacket {
      * @since v662
      */
     public long tick;
+    /**
+     * @since v898
+     */
+    public boolean ambient;
 
     @Override
     public final PacketSignal handle(BedrockPacketHandler handler) {

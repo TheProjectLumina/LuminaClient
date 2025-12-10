@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 public class AvailableCommandsSerializer_v388 extends AvailableCommandsSerializer_v340 {
 
-    private static final CommandEnumConstraint[] CONSTRAINTS = CommandEnumConstraint.values();
+    protected static final CommandEnumConstraint[] CONSTRAINTS = CommandEnumConstraint.values();
 
     public AvailableCommandsSerializer_v388(TypeMap<CommandParam> paramTypeMap) {
         super(paramTypeMap);

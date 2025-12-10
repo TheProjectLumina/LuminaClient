@@ -40,7 +40,7 @@ public class AvailableCommandsSerializer_v291 implements BedrockPacketSerializer
     protected static final CommandData.Flag[] FLAGS = CommandData.Flag.values();
     protected static final CommandParamOption[] OPTIONS = CommandParamOption.values();
 
-    private final TypeMap<CommandParam> paramTypeMap;
+    protected final TypeMap<CommandParam> paramTypeMap;
 
     @Override
     public void serialize(ByteBuf buffer, BedrockCodecHelper helper, AvailableCommandsPacket packet) {

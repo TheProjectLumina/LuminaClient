@@ -878,5 +878,53 @@ public enum SoundEvent {
      * @since v843
      */
     MULTI_ITEM_SWAP,
+    /**
+     * @since v898
+     */
+    LUNGE_1,
+    /**
+     * @since v898
+     */
+    LUNGE_2,
+    /**
+     * @since v898
+     */
+    LUNGE_3,
+    /**
+     * @since v898
+     */
+    ATTACK_CRITICAL,
+    /**
+     * @since v898
+     */
+    SPEAR_ATTACK_HIT,
+    /**
+     * @since v898
+     */
+    SPEAR_ATTACK_MISS,
+    /**
+     * @since v898
+     */
+    WOODEN_SPEAR_ATTACK_HIT,
+    /**
+     * @since v898
+     */
+    WOODEN_SPEAR_ATTACK_MISS,
+    /**
+     * @since v898
+     */
+    IMITATE_PARCHED,
+    /**
+     * @since v898
+     */
+    IMITATE_CAMEL_HUSK,
+    /**
+     * @since v898
+     */
+    SPEAR_USE,
+    /**
+     * @since v898
+     */
+    WOODEN_SPEAR_USE,
     UNDEFINED
 }

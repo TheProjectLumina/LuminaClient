@@ -10,5 +10,4 @@ public class Bedrock_v860 extends Bedrock_v859 {
             .protocolVersion(860)
             .minecraftVersion("1.21.124")
             .build();
-
 }

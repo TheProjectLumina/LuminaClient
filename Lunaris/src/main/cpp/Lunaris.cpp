@@ -98,8 +98,8 @@ Java_com_project_lumina_relay_LuminaRelay_createNativeAdvertisement(JNIEnv* env,
     }
     env->CallObjectMethod(pongObj, setEdition, createJavaString(env, "MCPE"));
     env->CallObjectMethod(pongObj, setGameType, createJavaString(env, "Survival"));
-    env->CallObjectMethod(pongObj, setVersion, createJavaString(env, "1.21.124"));
-    env->CallObjectMethod(pongObj, setProtocolVersion, 860);
+    env->CallObjectMethod(pongObj, setVersion, createJavaString(env, "1.21.130"));
+    env->CallObjectMethod(pongObj, setProtocolVersion, 898);
     env->CallObjectMethod(pongObj, setMotd, createJavaString(env, "§bWelcome To Lunaris§b"));
     env->CallObjectMethod(pongObj, setPlayerCount, 0);
     env->CallObjectMethod(pongObj, setMaxPlayerCount, 20);

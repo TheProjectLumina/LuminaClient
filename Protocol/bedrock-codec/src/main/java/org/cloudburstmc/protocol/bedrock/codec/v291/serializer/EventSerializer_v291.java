@@ -58,7 +58,7 @@ public class EventSerializer_v291 implements BedrockPacketSerializer<EventPacket
         VarInts.writeLong(buffer, packet.getUniqueEntityId());
         EventData eventData = packet.getEventData();
         VarInts.writeInt(buffer, eventData.getType().ordinal());
-        buffer.writeByte(packet.getUsePlayerId());
+        buffer.writeBoolean(packet.isUsePlayerId());
 
         TriConsumer<ByteBuf, BedrockCodecHelper, EventData> function = this.writers.get(eventData.getType());
 
@@ -77,7 +77,7 @@ public class EventSerializer_v291 implements BedrockPacketSerializer<EventPacket
         Preconditions.checkElementIndex(eventId, VALUES.length, "EventDataType");
         EventDataType type = VALUES[eventId];
 
-        packet.setUsePlayerId(buffer.readByte());
+        packet.setUsePlayerId(buffer.readBoolean());
 
         BiFunction<ByteBuf, BedrockCodecHelper, EventData> function = this.readers.get(type);
 

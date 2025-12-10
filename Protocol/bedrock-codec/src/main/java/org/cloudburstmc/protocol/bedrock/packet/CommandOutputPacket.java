@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandOriginData;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandOutputMessage;
 import org.cloudburstmc.protocol.bedrock.data.command.CommandOutputType;
@@ -20,6 +21,7 @@ public class CommandOutputPacket implements BedrockPacket {
     public CommandOriginData commandOriginData;
     public CommandOutputType type;
     public int successCount;
+    @Nullable
     public String data;
 
     @Override

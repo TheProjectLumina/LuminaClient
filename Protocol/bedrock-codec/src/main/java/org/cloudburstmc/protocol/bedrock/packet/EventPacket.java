@@ -11,7 +11,7 @@ import org.cloudburstmc.protocol.common.PacketSignal;
 @ToString(doNotUseGetters = true)
 public class EventPacket implements BedrockPacket {
     public long uniqueEntityId;
-    public byte usePlayerId;
+    public boolean usePlayerId;
     public EventData eventData;
 
     @Override
