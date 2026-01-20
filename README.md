@@ -3,6 +3,10 @@
 ![Lumina Client Logo](./images/lumina.png)  
 [![Download count](https://img.shields.io/github/downloads/TheProjectLumina/LuminaClient/total.svg)](https://github.com/TheProjectLumina/LuminaClient/releases)[![Netlify Status](https://api.netlify.com/api/v1/badges/679c08db-f713-4384-b052-1fd2f90d35f3/deploy-status)](https://app.netlify.com/projects/projectlumina/deploys) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)[![GitHub issues](https://img.shields.io/github/issues/TheProjectLumina/LuminaClient.svg) ](https://github.com/TheProjectLumina/LuminaClient/issues)[![GitHub stars](https://img.shields.io/github/stars/TheProjectLumina/LuminaClient.svg)](https://github.com/TheProjectLumina/LuminaClient/stargazers)[![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?logo=intellij-idea&logoColor=white)](https://www.jetbrains.com/idea/)[![Firebase](https://img.shields.io/badge/Firebase-039BE5?logo=Firebase&logoColor=white)](https://firebase.google.com/)[![Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)](https://developer.android.com/studio)
 
+## INFO
+
+Lumina Client is undergoing a recode, Please visit our [Discord](https://discord.gg/toolbox) for more informations.
+
 ## Introduction
 
 Lumina Client is a tool built for Minecraft Bedrock Edition players who want to step up their game in competitive PvP. It’s designed to work smoothly across different devices, offering a reliable and user-friendly experience. Our team has worked hard to create a client that supports players on popular servers while keeping performance steady and dependable. Whether you’re a player looking to improve your skills or a developer wanting to dive into our code, Lumina is here to help you succeed.
