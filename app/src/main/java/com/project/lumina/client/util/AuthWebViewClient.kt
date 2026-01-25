@@ -109,7 +109,7 @@ class AuthWebView @JvmOverloads constructor(
             showLoadingPage("Setting up your account...")
             thread {
                 try {
-                    val (accessToken, refreshToken) = deviceInfo!!.refreshToken(authCode)
+                    val (accessToken, refreshToken) = deviceInfo!!.exchangeAuthCode(authCode)
                     handler.post { showLoadingPage("Authenticating with Xbox...") }
 
                     val username = try {
