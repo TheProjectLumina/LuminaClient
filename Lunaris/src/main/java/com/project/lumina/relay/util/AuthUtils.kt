@@ -178,6 +178,33 @@ data class XboxDeviceInfo(
     val allowDirectTitleTokenFetch: Boolean = false,
     val xalRedirect: String = ""
 ) {
+    fun exchangeAuthCode(code: String): Pair<String, String> {
+        val form = FormBody.Builder()
+        form.add("client_id", appId)
+        form.add("redirect_uri", "https://login.live.com/oauth20_desktop.srf")
+        form.add("grant_type", "authorization_code")
+        form.add("code", code)
+
+        val request = Request.Builder()
+            .url("https://login.live.com/oauth20_token.srf")
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .post(form.build())
+            .build()
+
+        val response = HttpUtils.client.newCall(request).execute()
+        assert(response.code == 200) { "Http code ${response.code}" }
+
+        val body = JsonParser.parseReader(response.body!!.charStream()).asJsonObject
+        if (!body.has("access_token") || !body.has("refresh_token")) {
+            if (body.has("error")) {
+                throw RuntimeException("error occur whilst refreshing token: " + body.get("error").asString)
+            } else {
+                throw RuntimeException("error occur whilst refreshing token")
+            }
+        }
+        return body.get("access_token").asString to body.get("refresh_token").asString
+    }
+
     fun refreshToken(token: String): Pair<String, String> {
         val form = FormBody.Builder()
         form.add("client_id", appId)
