@@ -1,0 +1,48 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M10.002,20.003v-16h-5a1,1 0,0 0,-1 1v14a1,1 0,0 0,1 1h5z"
+        android:strokeLineJoin="round"
+        android:strokeWidth="@integer/tabler_icon_stroke"
+        android:strokeColor="@color/tabler_icon"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M15.002,20.003h-0.01"
+        android:strokeLineJoin="round"
+        android:strokeWidth="@integer/tabler_icon_stroke"
+        android:strokeColor="@color/tabler_icon"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M20.003,20.003h-0.011"
+        android:strokeLineJoin="round"
+        android:strokeWidth="@integer/tabler_icon_stroke"
+        android:strokeColor="@color/tabler_icon"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M20.003,15.002h-0.011"
+        android:strokeLineJoin="round"
+        android:strokeWidth="@integer/tabler_icon_stroke"
+        android:strokeColor="@color/tabler_icon"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M20.003,9.002h-0.011"
+        android:strokeLineJoin="round"
+        android:strokeWidth="@integer/tabler_icon_stroke"
+        android:strokeColor="@color/tabler_icon"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M20.003,4.002h-0.011"
+        android:strokeLineJoin="round"
+        android:strokeWidth="@integer/tabler_icon_stroke"
+        android:strokeColor="@color/tabler_icon"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M15.002,4.002h-0.01"
+        android:strokeLineJoin="round"
+        android:strokeWidth="@integer/tabler_icon_stroke"
+        android:strokeColor="@color/tabler_icon"
+        android:strokeLineCap="round" />
+</vector>
