@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<inset android:insetTop="2.0dip" android:insetBottom="2.0dip"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <layer-list>
+        <item android:gravity="bottom">
+            <shape>
+                <solid android:color="#ffffffff" />
+                <size android:height="1.0dip" />
+            </shape>
+        </item>
+    </layer-list>
+</inset>

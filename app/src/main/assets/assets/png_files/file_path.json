@@ -1,0 +1,205 @@
+{
+  "allay": {
+    "types": [
+      {
+        "textures": {
+          "8": "/png_files/8x8/allay/allay.png",
+          "16": "/png_files/16x16/allay/allay.png"
+        },
+        "default": true
+      }
+    ]
+  },
+  "axolotl": {
+    "types": [
+      {
+        "variant": "lucy",
+        "textures": {
+          "8": "/png_files/8x8/axolotl/pink.png",
+          "16": "/png_files/16x16/axolotl/pink.png"
+        },
+        "default": true
+      },
+      {
+        "variant": "wild",
+        "textures": {
+          "8": "/png_files/8x8/axolotl/wild.png",
+          "16": "/png_files/16x16/axolotl/wild.png"
+        }
+      },
+      {
+        "variant": "gold",
+        "textures": {
+          "8": "/png_files/8x8/axolotl/gold.png",
+          "16": "/png_files/16x16/axolotl/gold.png"
+        }
+      },
+      {
+        "variant": "cyan",
+        "textures": {
+          "8": "/png_files/8x8/axolotl/cyan.png",
+          "16": "/png_files/16x16/axolotl/cyan.png"
+        }
+      },
+      {
+        "variant": "blue",
+        "textures": {
+          "8": "/png_files/8x8/axolotl/blue.png",
+          "16": "/png_files/16x16/axolotl/blue.png"
+        }
+      }
+    ]
+  },
+  "bear": {
+    "types": [
+      {
+        "textures": {
+          "8": "/png_files/8x8/bear/polar.png",
+          "16": "/png_files/16x16/bear/polar.png"
+        },
+        "default": true
+      }
+    ]
+  },
+  "bee": {
+    "types": [
+      {
+        "angry": false,
+        "pollinated": false,
+        "textures": {
+          "8": "/png_files/8x8/bee/default.png",
+          "16": "/png_files/16x16/bee/default.png"
+        }
+      },
+      {
+        "angry": true,
+        "pollinated": false,
+        "textures": {
+          "8": "/png_files/8x8/bee/state/angry.png",
+          "16": "/png_files/16x16/bee/state/angry.png"
+        }
+      },
+      {
+        "dev_note": "Need TODO. Not currently provided.",
+        "response": 404,
+        "angry": false,
+        "pollinated": true,
+        "textures": {
+
+        }
+      },
+      {
+        "dev_note": "Need TODO. Not currently provided.",
+        "response": 404,
+        "angry": true,
+        "pollinated": true,
+        "textures": {
+
+        }
+      }
+    ]
+  },
+  "breeze": {
+    "types": [
+      {
+        "textures": {
+          "8": "/png_files/8x8/breeze/breeze.png",
+          "16": "/png_files/16x16/breeze/breeze.png"
+        },
+        "default": true
+      }
+    ]
+  },
+  "camel": {
+    "types": [
+      {
+        "textures": {
+          "8": "/png_files/8x8/camel/camel.png",
+          "16": "/png_files/16x16/camel/camel.png"
+        }
+      }
+    ]
+  },
+  "cat": {
+    "types": [
+      {
+        "variant": "white",
+        "textures": {
+          "8": "/png_files/8x8/cat/white.png",
+          "16": "/png_files/16x16/cat/white.png"
+        }
+      },
+      {
+        "variant": "black",
+        "textures": {
+          "8": "/png_files/8x8/cat/black.png",
+          "16": "/png_files/16x16/cat/black.png"
+        },
+        "default": true
+      },
+      {
+        "variant": "red",
+        "textures": {
+          "8": "/png_files/8x8/cat/red.png",
+          "16": "/png_files/16x16/cat/red.png"
+        }
+      },
+      {
+        "variant": "siamese",
+        "textures": {
+          "8": "/png_files/8x8/cat/siamese.png",
+          "16": "/png_files/16x16/cat/siamese.png"
+        }
+      },
+      {
+        "variant": "british_shorthair",
+        "textures": {
+          "8": "/png_files/8x8/cat/british_shorthair.png",
+          "16": "/png_files/16x16/cat/british_shorthair.png"
+        }
+      },
+      {
+        "variant": "calico",
+        "textures": {
+          "8": "/png_files/8x8/cat/calico.png",
+          "16": "/png_files/16x16/cat/calico.png"
+        }
+      },
+      {
+        "variant": "persian",
+        "textures": {
+          "8": "/png_files/8x8/cat/persian.png",
+          "16": "/png_files/16x16/cat/persian.png"
+        }
+      },
+      {
+        "variant": "ragdoll",
+        "textures": {
+          "8": "/png_files/8x8/cat/ragdoll.png",
+          "16": "/png_files/16x16/cat/ragdoll.png"
+        }
+      },
+      {
+        "variant": "tabby",
+        "textures": {
+          "8": "/png_files/8x8/cat/tabby.png",
+          "16": "/png_files/16x16/cat/tabby.png"
+        }
+      },
+      {
+        "variant": "all_black",
+        "textures": {
+          "8": "/png_files/8x8/cat/all_black.png",
+          "16": "/png_files/16x16/cat/all_black.png"
+        }
+      },
+      {
+        "variant": "jellie",
+        "textures": {
+          "8": "/png_files/8x8/cat/jellie.png",
+          "16": "/png_files/16x16/cat/jellie.png"
+        }
+      }
+    ]
+  }
+}
