@@ -5,12 +5,27 @@ import math
 
 def calculate_distance():
     try:
-        x1, y1, z1 = float(entry_x1.get()), float(entry_y1.get()), float(entry_z1.get())
-        x2, y2, z2 = float(entry_x2.get()), float(entry_y2.get()), float(entry_z2.get())
-        distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)
+        x1 = float(entry_x1.get())
+        y1 = float(entry_y1.get())
+        z1 = float(entry_z1.get())
+
+        x2 = float(entry_x2.get())
+        y2 = float(entry_y2.get())
+        z2 = float(entry_z2.get())
+
+        dx = x2 - x1
+        dy = y2 - y1
+        dz = z2 - z1
+
+        distance = math.hypot(dx, dy, dz)
+
+        if not math.isfinite(distance):
+            raise ValueError
+
         output_var.set(f"Distance: {distance:.3f}")
-    except ValueError:
-        output_var.set("Invalid input. Use numbers.")
+
+    except (ValueError, OverflowError):
+        output_var.set("Invalid input. Use finite numbers.")
 
 def calculate_angle():
     try:
