@@ -26,16 +26,31 @@ def calculate_distance():
 
     except (ValueError, OverflowError):
         output_var.set("Invalid input. Use finite numbers.")
-
+    
+    
 def calculate_angle():
-    try:
-        x1, z1 = float(entry_x1.get()), float(entry_z1.get())
-        x2, z2 = float(entry_x2.get()), float(entry_z2.get())
-        yaw = math.degrees(math.atan2(z2 - z1, x2 - x1)) - 90
-        yaw = (yaw + 360) % 360
+     try:
+        x1 = float(entry_x1.get())
+        z1 = float(entry_z1.get())
+        x2 = float(entry_x2.get())
+        z2 = float(entry_z2.get())
+
+        dx = x2 - x1
+        dz = z2 - z1
+
+        if dx == 0 and dz == 0:
+            output_var.set("Invalid input. Points are identical.")
+            return
+
+        yaw = (math.degrees(math.atan2(dz, dx)) - 90.0) % 360.0
+
+        if not math.isfinite(yaw):
+            raise ValueError
+
         output_var.set(f"Yaw: {yaw:.2f}°")
-    except ValueError:
-        output_var.set("Invalid input. Use numbers.")
+
+    except (ValueError, OverflowError):
+        output_var.set("Invalid input. Use finite numbers.")
 
 def calculate_velocity():
     try:
